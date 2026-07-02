@@ -1,0 +1,147 @@
+{
+  "version": "0.2.0",
+  "description": "科杰实时竞对雷达监控清单。微信公众号优先使用手动链接/正文导入；官网、RSS、新闻页由 Actions 定时扫描。",
+  "scanLimitPerSource": 5,
+  "companies": [
+    {
+      "name": "智谱",
+      "type": "模型厂商",
+      "status": "正在链接",
+      "priority": "P0",
+      "keywords": ["智谱", "GLM", "AutoGLM", "Agent", "政务", "国资", "MaaS"],
+      "sources": [
+        { "kind": "html", "name": "智谱官网", "url": "https://www.zhipuai.cn/" },
+        { "kind": "html", "name": "智谱投资者关系", "url": "https://www.zhipuai.cn/investor_relations" }
+      ]
+    },
+    {
+      "name": "DeepSeek",
+      "type": "模型厂商",
+      "status": "重点适配",
+      "priority": "P0",
+      "keywords": ["DeepSeek", "开源", "MoE", "推理", "模型", "R1", "V3"],
+      "sources": [
+        { "kind": "html", "name": "DeepSeek 官网", "url": "https://www.deepseek.com/" },
+        { "kind": "rss", "name": "DeepSeek GitHub Releases", "url": "https://github.com/deepseek-ai/DeepSeek-V3/releases.atom" }
+      ]
+    },
+    {
+      "name": "华为昇腾",
+      "type": "算力/云",
+      "status": "重点生态",
+      "priority": "P0",
+      "keywords": ["华为", "昇腾", "Ascend", "Agentic Infra", "AgentArts", "ModelArts", "盘古"],
+      "sources": [
+        { "kind": "html", "name": "华为新闻", "url": "https://www.huawei.com/cn/news" },
+        { "kind": "html", "name": "华为云新闻", "url": "https://www.huaweicloud.com/about/news.html" }
+      ]
+    },
+    {
+      "name": "中科曙光",
+      "type": "算力厂商",
+      "status": "已在合作适配",
+      "priority": "P0",
+      "keywords": ["曙光", "中科曙光", "智算", "算力", "液冷", "存储", "AIDC"],
+      "sources": [
+        { "kind": "html", "name": "中科曙光官网新闻", "url": "https://www.sugon.com/xwzx" }
+      ]
+    },
+    {
+      "name": "天数智芯",
+      "type": "芯片厂商",
+      "status": "已在合作适配",
+      "priority": "P0",
+      "keywords": ["天数智芯", "GPU", "智算", "推理", "训练", "国产"],
+      "sources": [
+        { "kind": "html", "name": "天数智芯官网", "url": "https://www.iluvatar.com/" }
+      ]
+    },
+    {
+      "name": "海光",
+      "type": "芯片厂商",
+      "status": "建议纳入适配",
+      "priority": "P1",
+      "keywords": ["海光", "DCU", "CPU", "国产芯片", "算力"],
+      "sources": [
+        { "kind": "html", "name": "海光信息官网", "url": "https://www.hygon.cn/" }
+      ]
+    },
+    {
+      "name": "清微智能",
+      "type": "芯片厂商",
+      "status": "建议观察",
+      "priority": "P1",
+      "keywords": ["清微智能", "可重构", "AI 芯片", "边缘智能", "算力"],
+      "sources": [
+        { "kind": "html", "name": "清微智能官网", "url": "https://www.tsingmicro.com/" }
+      ]
+    },
+    {
+      "name": "Databricks",
+      "type": "国际数据基础设施",
+      "status": "国际对标",
+      "priority": "P0",
+      "keywords": ["Databricks", "Lakehouse", "Agent Bricks", "Unity Catalog", "Data Intelligence"],
+      "sources": [
+        { "kind": "rss", "name": "Databricks Blog", "url": "https://www.databricks.com/blog/rss.xml" },
+        { "kind": "html", "name": "Databricks News", "url": "https://www.databricks.com/company/newsroom/press-releases" }
+      ]
+    },
+    {
+      "name": "Snowflake",
+      "type": "国际数据基础设施",
+      "status": "国际对标",
+      "priority": "P0",
+      "keywords": ["Snowflake", "Cortex", "CoWork", "CoCo", "Agentic Enterprise", "Horizon Catalog"],
+      "sources": [
+        { "kind": "rss", "name": "Snowflake Blog", "url": "https://www.snowflake.com/en/feed/" },
+        { "kind": "html", "name": "Snowflake Press Releases", "url": "https://www.snowflake.com/en/news/press-releases/" }
+      ]
+    },
+    {
+      "name": "Palantir",
+      "type": "国际数据基础设施",
+      "status": "国际对标",
+      "priority": "P1",
+      "keywords": ["Palantir", "AIP", "Ontology", "Agent", "Foundry"],
+      "sources": [
+        { "kind": "html", "name": "Palantir News", "url": "https://www.palantir.com/newsroom/" }
+      ]
+    },
+    {
+      "name": "星环科技",
+      "type": "专业基础软件",
+      "status": "重点竞合",
+      "priority": "P0",
+      "keywords": ["星环", "Transwarp", "ArgoDB", "XClaw", "AI-Ready", "湖仓"],
+      "sources": [
+        { "kind": "html", "name": "星环新闻", "url": "https://www.transwarp.cn/news" }
+      ]
+    },
+    {
+      "name": "滴普科技",
+      "type": "专业基础软件",
+      "status": "重点竞合",
+      "priority": "P1",
+      "keywords": ["滴普", "Deepexi", "FastData", "DeepClaw", "FastAGI", "数字员工"],
+      "sources": [
+        { "kind": "html", "name": "滴普官网", "url": "https://deepexi.com/" }
+      ]
+    },
+    {
+      "name": "迅策科技",
+      "type": "实时数据基础设施",
+      "status": "重点观察",
+      "priority": "P1",
+      "keywords": ["迅策", "实时数据", "AI Data Agent", "金融", "流计算"],
+      "sources": [
+        { "kind": "html", "name": "迅策官网", "url": "https://www.xunce.com/" }
+      ]
+    }
+  ],
+  "wechatAccounts": [
+    { "name": "智谱AI", "company": "智谱", "instruction": "复制公众号原文链接或正文，使用 ingest-material workflow 或网页导入。" },
+    { "name": "华为云", "company": "华为昇腾", "instruction": "优先导入公众号深度文章，系统会自动沉淀到竞对与行业库。" },
+    { "name": "Snowflake / Databricks 行业转载", "company": "国际数据厂商", "instruction": "中文媒体/公众号转载可直接复制全文导入。" }
+  ]
+}
