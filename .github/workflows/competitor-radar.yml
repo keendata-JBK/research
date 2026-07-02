@@ -1,0 +1,28 @@
+name: Competitor Radar Scan
+
+on:
+  schedule:
+    # 每天北京时间 08:20 自动扫描一次；需要更高频可改成多条 cron。
+    - cron: '20 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run radar scanner
+        run: node scripts/scan-radar.mjs
+      - name: Commit generated radar data
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: update competitor radar data'
+          file_pattern: 'public/generated/radar.json content/briefs/*.md'
