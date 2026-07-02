@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Bell, BookOpen, BrainCircuit, Building2, ChevronRight, Compass, Database, FileText, Flame, Home, Lightbulb, Menu, Plus, Search, Settings, ShieldCheck, Sparkles, UploadCloud, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Bell, BookOpen, BrainCircuit, Building2, ChevronRight, Compass, FileText, Flame, Home, Lightbulb, Menu, Plus, Search, Settings, ShieldCheck, Sparkles, UploadCloud, X } from 'lucide-react';
 import { analyzeMaterial } from './lib/analyzer';
 import { competitors as seedCompetitors, events as seedEvents, implications as seedImplications, sources as seedSources, themes as seedThemes, viewpoints as seedViewpoints } from './data';
 import type { EventItem, IndustryTheme, KejieImplication, SourceMaterial, Viewpoint } from './types';
@@ -12,6 +12,12 @@ type RuntimeData = {
   viewpoints: Viewpoint[];
   implications: KejieImplication[];
   sources: SourceMaterial[];
+};
+
+type GeneratedRadar = RuntimeData & {
+  generatedAt?: string;
+  scanSummary?: string;
+  watchlistCount?: number;
 };
 
 const STORAGE_KEY = 'keendata-strategy-hub-runtime-v1';
@@ -87,7 +93,7 @@ function EventRow({ item, index }: { item: EventItem; index: number }) {
 }
 
 function Radar({ themes }: { themes: IndustryTheme[] }) {
-  const values = themes.slice(0, 6).map((theme) => theme.hot);
+  const values = themes.slice(0, 6).map((theme) => theme.hot || 50);
   const labels = themes.slice(0, 6).map((theme) => theme.name.replace('AI ', ''));
   const center = 92;
   const max = 76;
@@ -118,22 +124,25 @@ function Radar({ themes }: { themes: IndustryTheme[] }) {
   );
 }
 
-function HomePage({ allEvents, allThemes, allImplications, allViewpoints, setPage }: { allEvents: EventItem[]; allThemes: IndustryTheme[]; allImplications: KejieImplication[]; allViewpoints: Viewpoint[]; setPage: (page: Page) => void }) {
+function HomePage({ allEvents, allThemes, allImplications, allViewpoints, remote, setPage }: { allEvents: EventItem[]; allThemes: IndustryTheme[]; allImplications: KejieImplication[]; allViewpoints: Viewpoint[]; remote: GeneratedRadar | null; setPage: (page: Page) => void }) {
   const topEvents = allEvents.slice(0, 5);
   const masterCount = allViewpoints.filter((item) => item.status === '母版候选').length + allImplications.filter((item) => item.status === '母版候选').length;
+  const today = new Date().toISOString().slice(0, 10);
+  const todayCount = allEvents.filter((item) => item.date === today).length;
   return (
     <div className="page-grid">
       <section className="hero-card">
         <div>
-          <p className="eyebrow">Strategy Hub</p>
-          <h1>科杰战略情报与认知共创平台</h1>
-          <p>竞对追踪 · 行业学习 · 观点提炼 · 母版进化 · 对科杰启发实时沉淀</p>
+          <p className="eyebrow">Strategy Hub · Real-time Radar</p>
+          <h1>科杰战略情报与实时竞对系统</h1>
+          <p>竞对追踪 · 公众号材料导入 · 行业学习 · 观点提炼 · 母版进化 · 对科杰启发实时沉淀</p>
+          {remote?.generatedAt && <p className="remote-line">自动扫描时间：{new Date(remote.generatedAt).toLocaleString()}｜扫描源：{remote.watchlistCount || 0} 个</p>}
         </div>
         <button className="primary" onClick={() => setPage('import')}><Plus size={16} />导入材料</button>
       </section>
       <div className="stats-row">
-        <StatCard label="今日新增情报" value={24} delta="较昨日 +8" icon={<Sparkles size={20} />} />
-        <StatCard label="竞对动态" value={allEvents.length} delta="高影响 3 条" icon={<Building2 size={20} />} />
+        <StatCard label="今日新增情报" value={todayCount || 24} delta="自动+人工" icon={<Sparkles size={20} />} />
+        <StatCard label="竞对动态" value={allEvents.length} delta="实时雷达" icon={<Building2 size={20} />} />
         <StatCard label="行业主题" value={allThemes.length} delta="热度上升" icon={<Flame size={20} />} />
         <StatCard label="母版候选" value={masterCount} delta="待审核" icon={<BookOpen size={20} />} />
       </div>
@@ -153,7 +162,7 @@ function HomePage({ allEvents, allThemes, allImplications, allViewpoints, setPag
       </div>
       <div className="content-three">
         <section className="panel"><div className="panel-head"><h2>行业热度雷达</h2></div><Radar themes={allThemes} /></section>
-        <section className="panel"><div className="panel-head"><h2>竞对动态</h2><button onClick={() => setPage('competitors')}>更多</button></div>{seedCompetitors.slice(0, 6).map((c) => <div className="company-mini" key={c.id}><span className="avatar">{c.logo}</span><div><strong>{c.name}</strong><p>{c.status}</p></div></div>)}</section>
+        <section className="panel"><div className="panel-head"><h2>重点竞合对象</h2><button onClick={() => setPage('competitors')}>更多</button></div>{seedCompetitors.slice(0, 6).map((c) => <div className="company-mini" key={c.id}><span className="avatar">{c.logo}</span><div><strong>{c.name}</strong><p>{c.status}</p></div></div>)}</section>
         <section className="panel"><div className="panel-head"><h2>本周建议讨论议题</h2></div><ol className="question-list"><li>KeenClaw 是否定义为组织级入口与行动句柄？</li><li>企业认知模型如何升级为共享企业上下文？</li><li>可信数据空间如何从数据流通走向智能服务运营？</li></ol></section>
       </div>
     </div>
@@ -163,7 +172,7 @@ function HomePage({ allEvents, allThemes, allImplications, allViewpoints, setPag
 function CompetitorsPage({ allEvents }: { allEvents: EventItem[] }) {
   const [active, setActive] = useState(seedCompetitors[0].id);
   const company = seedCompetitors.find((item) => item.id === active)!;
-  const companyEvents = allEvents.filter((event) => event.company === company.name || company.tags.some((tag) => event.tags.includes(tag))).slice(0, 6);
+  const companyEvents = allEvents.filter((event) => event.company === company.name || company.tags.some((tag) => event.tags.includes(tag))).slice(0, 8);
   return (
     <div className="split-page">
       <section className="panel company-list">
@@ -219,7 +228,7 @@ function ImportPage({ onImport }: { onImport: (payload: ReturnType<typeof analyz
 
   return (
     <div className="import-layout">
-      <section className="panel import-panel"><div className="panel-head"><h2>导入材料</h2><span className="subtle">支持微信公众号链接、网页链接、复制文本；MVP 先以前端解析和候选卡生成为主</span></div><label>标题<input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：智谱发布企业智能体方案" /></label><label>来源<input value={publisher} onChange={(e) => setPublisher(e.target.value)} /></label><label>链接<input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://mp.weixin.qq.com/s/..." /></label><label>正文<textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="粘贴公众号正文或行业文章摘要，系统会生成竞对事件、行业洞察、观点和科杰启发候选。" /></label><button className="primary wide" disabled={!content.trim()} onClick={submit}><Sparkles size={16} />解析并生成候选</button></section>
+      <section className="panel import-panel"><div className="panel-head"><h2>导入材料</h2><span className="subtle">支持微信公众号链接、网页链接、复制文本；可前端即时生成候选，也可用 GitHub Actions 批量入库</span></div><label>标题<input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：智谱发布企业智能体方案" /></label><label>来源<input value={publisher} onChange={(e) => setPublisher(e.target.value)} /></label><label>链接<input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://mp.weixin.qq.com/s/..." /></label><label>正文<textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="粘贴公众号正文或行业文章摘要，系统会生成竞对事件、行业洞察、观点和科杰启发候选。" /></label><button className="primary wide" disabled={!content.trim()} onClick={submit}><Sparkles size={16} />解析并生成候选</button></section>
       <section className="panel"><div className="panel-head"><h2>解析结果</h2></div>{result ? <div className="result-stack"><ResultBlock title="竞对事件" body={`${result.event.company}｜${result.event.title}\n${result.event.summary}`} /><ResultBlock title="行业洞察" body={`${result.theme.name}\n${result.theme.summary}`} /><ResultBlock title="观点提炼" body={result.viewpoint.kejieRewrite} /><ResultBlock title="对科杰启发" body={`${result.implication.title}\n${result.implication.action}`} /></div> : <div className="empty-state"><UploadCloud size={38} /><p>导入后将在这里生成结构化候选。</p></div>}</section>
     </div>
   );
@@ -248,13 +257,23 @@ export default function App() {
   const [page, setPage] = useState<Page>('home');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [runtime, setRuntime] = useState<RuntimeData>(() => loadRuntime());
+  const [remote, setRemote] = useState<GeneratedRadar | null>(null);
   const [query, setQuery] = useState('');
 
-  const allEvents = [...runtime.events, ...seedEvents];
-  const allThemes = [...runtime.themes, ...seedThemes];
-  const allViewpoints = [...runtime.viewpoints, ...seedViewpoints];
-  const allImplications = [...runtime.implications, ...seedImplications];
-  const allSources = [...runtime.sources, ...seedSources];
+  useEffect(() => {
+    const url = `${import.meta.env.BASE_URL}generated/radar.json?ts=${Date.now()}`;
+    fetch(url)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: GeneratedRadar | null) => setRemote(data))
+      .catch(() => setRemote(null));
+  }, []);
+
+  const remoteData: RuntimeData = remote || { events: [], themes: [], viewpoints: [], implications: [], sources: [] };
+  const allEvents = [...runtime.events, ...remoteData.events, ...seedEvents];
+  const allThemes = [...runtime.themes, ...remoteData.themes, ...seedThemes];
+  const allViewpoints = [...runtime.viewpoints, ...remoteData.viewpoints, ...seedViewpoints];
+  const allImplications = [...runtime.implications, ...remoteData.implications, ...seedImplications];
+  const allSources = [...runtime.sources, ...remoteData.sources, ...seedSources];
 
   function onImport(payload: ReturnType<typeof analyzeMaterial>) {
     const next = { events: [payload.event, ...runtime.events], themes: [payload.theme, ...runtime.themes], viewpoints: [payload.viewpoint, ...runtime.viewpoints], implications: [payload.implication, ...runtime.implications], sources: [payload.source, ...runtime.sources] };
@@ -264,16 +283,16 @@ export default function App() {
 
   const pageNode = (() => {
     switch (page) {
-      case 'home': return <HomePage allEvents={allEvents} allThemes={allThemes} allImplications={allImplications} allViewpoints={allViewpoints} setPage={setPage} />;
+      case 'home': return <HomePage allEvents={allEvents} allThemes={allThemes} allImplications={allImplications} allViewpoints={allViewpoints} remote={remote} setPage={setPage} />;
       case 'competitors': return <CompetitorsPage allEvents={allEvents} />;
       case 'industry': return <IndustryPage allThemes={allThemes} />;
       case 'viewpoints': return <ViewpointsPage allViewpoints={allViewpoints} />;
       case 'kejie': return <KejiePage allImplications={allImplications} />;
       case 'master': return <CardList title="母版候选池" subtitle="待人工审核后同步项目架构母版" items={[...allViewpoints.filter(v => v.status === '母版候选').map(v => ({ title: v.title, body: v.kejieRewrite, meta: '观点候选', tags: v.scenes })), ...allImplications.filter(v => v.status === '母版候选').map(v => ({ title: v.title, body: v.insight, meta: v.category, tags: [v.status] }))]} />;
-      case 'reports': return <SimplePage title="报告中心" body={`MVP 已提供日报/周报的内容结构入口。下一阶段将接入 GitHub Actions 自动生成周报：本周竞对动态、行业表达、观点提炼、科杰启发和母版候选。当前已收录材料 ${allSources.length} 条。`} />;
+      case 'reports': return <SimplePage title="报告中心" body={`实时竞对系统已接入 GitHub Actions 自动扫描。自动化结果写入 public/generated/radar.json，并触发 Pages 更新。当前已收录材料 ${allSources.length} 条；最近自动扫描：${remote?.generatedAt ? new Date(remote.generatedAt).toLocaleString() : '尚未运行'}。`} />;
       case 'import': return <ImportPage onImport={onImport} />;
       case 'search': return <SearchPage allEvents={allEvents} allThemes={allThemes} allImplications={allImplications} allViewpoints={allViewpoints} />;
-      case 'settings': return <SimplePage title="设置" body="后续接入企业微信/飞书登录、角色权限、模型 API、公司库、标签库、母版同步规则。当前版本为前端 MVP，适合先给领导和团队体验信息结构。" />;
+      case 'settings': return <SimplePage title="设置" body="已支持 watchlist、GitHub Actions 自动扫描、手动材料入库。后续可接入 OpenAI/DeepSeek/智谱 API、企业微信/飞书登录、角色权限、母版同步规则。" />;
       default: return null;
     }
   })();
