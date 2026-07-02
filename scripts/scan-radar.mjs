@@ -26,7 +26,12 @@ function groupTheme(themes) {
       prev.delta = Math.max(prev.delta, theme.delta);
       prev.expressions = [...new Set([...(prev.expressions || []), ...(theme.expressions || [])])].slice(0, 6);
       prev.companies = [...new Set([...(prev.companies || []), ...(theme.companies || [])])].slice(0, 8);
-      prev.summary = `${prev.summary} / ${theme.summary}`.slice(0, 180);
+      const summaries = [...new Set(
+        [prev.summary, theme.summary]
+          .filter(Boolean)
+          .flatMap((summary) => summary.split(' / ')),
+      )];
+      prev.summary = summaries.join(' / ').slice(0, 180).trim();
     }
   }
   return [...map.values()].sort((a, b) => b.hot - a.hot);
