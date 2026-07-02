@@ -1,10 +1,850 @@
 {
-  "generatedAt": "2026-07-02T00:00:00.000Z",
-  "scanSummary": "实时竞对雷达初始文件，等待 GitHub Actions 自动扫描覆盖。",
-  "watchlistCount": 0,
-  "events": [],
-  "themes": [],
-  "viewpoints": [],
-  "implications": [],
-  "sources": []
+  "generatedAt": "2026-07-02T14:55:27.659Z",
+  "scanSummary": "扫描 13 家竞合对象，新增候选 13 条，失败 5 个源。",
+  "watchlistCount": 13,
+  "errors": [
+    {
+      "company": "华为昇腾",
+      "source": "华为云新闻",
+      "url": "https://www.huaweicloud.com/about/news.html",
+      "error": "HTTP 404"
+    },
+    {
+      "company": "中科曙光",
+      "source": "中科曙光官网新闻",
+      "url": "https://www.sugon.com/xwzx",
+      "error": "HTTP 404"
+    },
+    {
+      "company": "Databricks",
+      "source": "Databricks Blog",
+      "url": "https://www.databricks.com/blog/rss.xml",
+      "error": "HTTP 404"
+    },
+    {
+      "company": "Snowflake",
+      "source": "Snowflake Blog",
+      "url": "https://www.snowflake.com/en/feed/",
+      "error": "HTTP 404"
+    },
+    {
+      "company": "迅策科技",
+      "source": "迅策官网",
+      "url": "https://www.xunce.com/",
+      "error": "fetch failed"
+    }
+  ],
+  "sources": [
+    {
+      "id": "src_f3691b2779b3",
+      "title": "Z.ai - Inspiring AGI to Benefit Humanity",
+      "publisher": "智谱官网",
+      "url": "https://www.zhipuai.cn/",
+      "importedAt": "2026-07-02",
+      "summary": "Z.ai - Inspiring AGI to Benefit Humanity GLM MaaS 产品 研究 关于我们 EN 中 合作咨询 你好 我是AutoClaw 头脑风暴 逻辑推理 信息问答 内容创作 创意开发 AutoClaw 只需1分钟，给每台电脑装上小龙虾 GLM模型 新一代大模型全栈技术体系 GLM-5…",
+      "tags": [
+        "Agent 生态",
+        "企业认知模型",
+        "智谱",
+        "GLM",
+        "AutoGLM",
+        "Agent"
+      ]
+    },
+    {
+      "id": "src_d03281cba627",
+      "title": "智谱",
+      "publisher": "智谱投资者关系",
+      "url": "https://www.zhipuai.cn/investor_relations",
+      "importedAt": "2026-07-02",
+      "summary": "智谱",
+      "tags": [
+        "智谱",
+        "模型厂商"
+      ]
+    },
+    {
+      "id": "src_a60ca98b2ec4",
+      "title": "DeepSeek | 深度求索",
+      "publisher": "DeepSeek 官网",
+      "url": "https://www.deepseek.com/",
+      "importedAt": "2026-07-02",
+      "summary": "DeepSeek | 深度求索 欢迎加入我们，我们投身于探索 AGI 的本质，拥抱对 AI 有热情的你 查看职位 → 🎉 DeepSeek-V4 预览版本发布，具备世界顶级推理性能，Agent 能力大幅提高，已在网页端、APP 和 API 上线，点击查看详情。 探索未至之境 开始对话 与 DeepSeek 免费对话 …",
+      "tags": [
+        "Agent 生态",
+        "DeepSeek",
+        "推理",
+        "模型",
+        "R1",
+        "V3"
+      ]
+    },
+    {
+      "id": "src_138b9836daf9",
+      "title": "v1.0.0",
+      "publisher": "DeepSeek GitHub Releases",
+      "url": "https://github.com/deepseek-ai/DeepSeek-V3/releases/tag/v1.0.0",
+      "importedAt": "2026-07-02",
+      "summary": "This release is created for archival purposes and DOI generation.",
+      "tags": [
+        "模型厂商"
+      ]
+    },
+    {
+      "id": "src_1a95fd0a6af1",
+      "title": "新闻中心 - 华为",
+      "publisher": "华为新闻",
+      "url": "https://www.huawei.com/cn/news",
+      "importedAt": "2026-07-02",
+      "summary": "新闻中心 - 华为 集团网站 选择区域/语言 返回主菜单 集团网站 企业业务网站 运营商业务网站 消费者业务网站 华为云业务网站 数字能源业务网站 返回主菜单 选择区域/语言 Australia - English Brazil - Português China - 简体中文 Europe - English Fra…",
+      "tags": [
+        "国产算力生态",
+        "华为",
+        "昇腾",
+        "算力/云"
+      ]
+    },
+    {
+      "id": "src_f76e626276f9",
+      "title": "天数智芯",
+      "publisher": "天数智芯官网",
+      "url": "https://www.iluvatar.com/",
+      "importedAt": "2026-07-02",
+      "summary": "天数智芯 首页 产品技术 产品技术 硬件 天垓系列 天垓100 天垓150 彤央系列 彤央TY1000 彤央TY1100 彤央TY1100_NX 彤央TY1200 推理系列 智铠100 软件 天数智算软件栈 产品技术 硬件 天垓系列 彤央系列 推理系列 软件 天数智算软件栈 产品技术 硬件 软件 产品技术 硬件 天垓系…",
+      "tags": [
+        "国产算力生态",
+        "天数智芯",
+        "GPU",
+        "智算",
+        "推理",
+        "训练"
+      ]
+    },
+    {
+      "id": "src_884036e15c50",
+      "title": "海光--用“芯”计算未来",
+      "publisher": "海光信息官网",
+      "url": "https://www.hygon.cn/",
+      "importedAt": "2026-07-02",
+      "summary": "海光--用“芯”计算未来 You need to enable JavaScript to run this app. MIT LICENSE Copyright (c) 2020-present Hygon, http://www.hygon.cn/ Permission is hereby granted, fre…",
+      "tags": [
+        "国产算力生态",
+        "海光",
+        "芯片厂商"
+      ]
+    },
+    {
+      "id": "src_985115a67626",
+      "title": "清微智能",
+      "publisher": "清微智能官网",
+      "url": "https://www.tsingmicro.com/",
+      "importedAt": "2026-07-02",
+      "summary": "清微智能 产品和技术 8系 5系 技术中心 端边协同 专业级边缘芯片 消费级边缘芯片 解决方案 关于清微 清微介绍 企业文化 新闻中心 加入我们 让可重构芯片 进入每一个计算节点 数读清微 千卡集群成本降低 50 % ↓ 建设可重构算力中心 10 + 云端算力芯片出货量 第一梯队 （2025 H1 IDC） 算力卡订单…",
+      "tags": [
+        "Agent 生态",
+        "国产算力生态",
+        "清微智能",
+        "可重构",
+        "AI 芯片",
+        "算力"
+      ]
+    },
+    {
+      "id": "src_06097cddbb1b",
+      "title": "Press Releases",
+      "publisher": "Databricks News",
+      "url": "https://www.databricks.com/company/newsroom/press-releases",
+      "importedAt": "2026-07-02",
+      "summary": "Databricks Press Releases | Databricks Skip to main content Login Why Databricks Discover For App Developers For Executives For Startups Lakehouse Architecture …",
+      "tags": [
+        "AI 数据基础设施",
+        "Agent 生态",
+        "Databricks",
+        "Lakehouse",
+        "国际数据基础设施"
+      ]
+    },
+    {
+      "id": "src_96b183f28da6",
+      "title": "Press Releases | Snowflake - The AI Data Cloud",
+      "publisher": "Snowflake Press Releases",
+      "url": "https://www.snowflake.com/en/news/press-releases/",
+      "importedAt": "2026-07-02",
+      "summary": "Press Releases | Snowflake - The AI Data Cloud Skip to content Snowflake World Tour hits your city See how leading teams deploy agents at scale. Find a stop nea…",
+      "tags": [
+        "Agent 生态",
+        "企业认知模型",
+        "Snowflake",
+        "CoWork",
+        "CoCo",
+        "Agentic Enterprise"
+      ]
+    },
+    {
+      "id": "src_5475faefe0c9",
+      "title": "Newsroom | Palantir",
+      "publisher": "Palantir News",
+      "url": "https://www.palantir.com/newsroom/",
+      "importedAt": "2026-07-02",
+      "summary": "Newsroom | Palantir /sitemap.xml",
+      "tags": [
+        "Palantir",
+        "国际数据基础设施"
+      ]
+    },
+    {
+      "id": "src_ed68a336b7ca",
+      "title": "新闻资讯-星环科技",
+      "publisher": "星环新闻",
+      "url": "https://www.transwarp.cn/news",
+      "importedAt": "2026-07-02",
+      "summary": "新闻资讯-星环科技 新闻资讯 关注星环科技新动态 星环科技携手香港宽频企业方案，共探金融行业AI落地新路径 近日，星环科技携手香港宽频企业方案（HKBN Enterprise Solutions）在香港举办企业AI与数据基础设施高管交流会。 发布时间：2026-06-28 聚焦AI Agent时代数据基础设施升级，星环…",
+      "tags": [
+        "Agent 生态",
+        "国产算力生态",
+        "星环",
+        "ArgoDB",
+        "XClaw",
+        "AI-Ready"
+      ]
+    },
+    {
+      "id": "src_ba3b544a7b71",
+      "title": "滴普科技 - AI创造无限可能",
+      "publisher": "滴普官网",
+      "url": "https://deepexi.com/",
+      "importedAt": "2026-07-02",
+      "summary": "滴普科技 - AI创造无限可能 DeepexiOS 行业实践 投资者关系 关于我们 企业动态 简体中文 简体中文 English 简体中文 | 简体中文 English AI级企业操作系统 DeepexiOS 平台 DeepSense工业智能体 DataSense运营智能体 DeepClaw企业基础智能体 DeepNo…",
+      "tags": [
+        "Agent 生态",
+        "滴普",
+        "Deepexi",
+        "DeepClaw",
+        "FastAGI",
+        "专业基础软件"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "evt_20260702_76110acc6d90",
+      "company": "智谱",
+      "date": "2026-07-02",
+      "type": "战略合作",
+      "title": "Z.ai - Inspiring AGI to Benefit Humanity",
+      "summary": "Z.ai - Inspiring AGI to Benefit Humanity GLM MaaS 产品 研究 关于我们 EN 中 合作咨询 你好 我是AutoClaw 头脑风暴 逻辑推理 信息问答 内容创作 创意开发 AutoClaw 只需1分钟，给每台电脑装上小龙虾 GLM模型 新一代大模型全栈…",
+      "source": "智谱官网",
+      "impact": "高",
+      "tags": [
+        "Agent 生态",
+        "企业认知模型",
+        "智谱",
+        "GLM",
+        "AutoGLM",
+        "Agent"
+      ],
+      "heat": 90
+    },
+    {
+      "id": "evt_20260702_ac76b9c4112f",
+      "company": "智谱",
+      "date": "2026-07-02",
+      "type": "行业动态",
+      "title": "智谱",
+      "summary": "智谱",
+      "source": "智谱投资者关系",
+      "impact": "中",
+      "tags": [
+        "智谱",
+        "模型厂商"
+      ],
+      "heat": 74
+    },
+    {
+      "id": "evt_20260702_ccb844a04531",
+      "company": "DeepSeek",
+      "date": "2026-07-02",
+      "type": "产品发布",
+      "title": "DeepSeek | 深度求索",
+      "summary": "DeepSeek | 深度求索 欢迎加入我们，我们投身于探索 AGI 的本质，拥抱对 AI 有热情的你 查看职位 → 🎉 DeepSeek-V4 预览版本发布，具备世界顶级推理性能，Agent 能力大幅提高，已在网页端、APP 和 API 上线，点击查看详情。 探索未至之境 开始对话 与 Deep…",
+      "source": "DeepSeek 官网",
+      "impact": "高",
+      "tags": [
+        "Agent 生态",
+        "DeepSeek",
+        "推理",
+        "模型",
+        "R1",
+        "V3"
+      ],
+      "heat": 90
+    },
+    {
+      "id": "evt_20260702_2e3641726b09",
+      "company": "华为昇腾",
+      "date": "2026-07-02",
+      "type": "战略合作",
+      "title": "新闻中心 - 华为",
+      "summary": "新闻中心 - 华为 集团网站 选择区域/语言 返回主菜单 集团网站 企业业务网站 运营商业务网站 消费者业务网站 华为云业务网站 数字能源业务网站 返回主菜单 选择区域/语言 Australia - English Brazil - Português China - 简体中文 Europe - E…",
+      "source": "华为新闻",
+      "impact": "高",
+      "tags": [
+        "国产算力生态",
+        "华为",
+        "昇腾",
+        "算力/云"
+      ],
+      "heat": 90
+    },
+    {
+      "id": "evt_20260702_8dfed59956f9",
+      "company": "天数智芯",
+      "date": "2026-07-02",
+      "type": "战略合作",
+      "title": "天数智芯",
+      "summary": "天数智芯 首页 产品技术 产品技术 硬件 天垓系列 天垓100 天垓150 彤央系列 彤央TY1000 彤央TY1100 彤央TY1100_NX 彤央TY1200 推理系列 智铠100 软件 天数智算软件栈 产品技术 硬件 天垓系列 彤央系列 推理系列 软件 天数智算软件栈 产品技术 硬件 软件 产…",
+      "source": "天数智芯官网",
+      "impact": "高",
+      "tags": [
+        "国产算力生态",
+        "天数智芯",
+        "GPU",
+        "智算",
+        "推理",
+        "训练"
+      ],
+      "heat": 90
+    },
+    {
+      "id": "evt_20260702_9699552af55f",
+      "company": "海光",
+      "date": "2026-07-02",
+      "type": "行业动态",
+      "title": "海光--用“芯”计算未来",
+      "summary": "海光--用“芯”计算未来 You need to enable JavaScript to run this app. MIT LICENSE Copyright (c) 2020-present Hygon, http://www.hygon.cn/ Permission is hereby gr…",
+      "source": "海光信息官网",
+      "impact": "低",
+      "tags": [
+        "国产算力生态",
+        "海光",
+        "芯片厂商"
+      ],
+      "heat": 58
+    },
+    {
+      "id": "evt_20260702_08bacf72594b",
+      "company": "清微智能",
+      "date": "2026-07-02",
+      "type": "战略合作",
+      "title": "清微智能",
+      "summary": "清微智能 产品和技术 8系 5系 技术中心 端边协同 专业级边缘芯片 消费级边缘芯片 解决方案 关于清微 清微介绍 企业文化 新闻中心 加入我们 让可重构芯片 进入每一个计算节点 数读清微 千卡集群成本降低 50 % ↓ 建设可重构算力中心 10 + 云端算力芯片出货量 第一梯队 （2025 H1 …",
+      "source": "清微智能官网",
+      "impact": "高",
+      "tags": [
+        "Agent 生态",
+        "国产算力生态",
+        "清微智能",
+        "可重构",
+        "AI 芯片",
+        "算力"
+      ],
+      "heat": 90
+    },
+    {
+      "id": "evt_20260702_b1cd50e4a52d",
+      "company": "Databricks",
+      "date": "2026-07-02",
+      "type": "行业动态",
+      "title": "Press Releases",
+      "summary": "Databricks Press Releases | Databricks Skip to main content Login Why Databricks Discover For App Developers For Executives For Startups Lakehouse Arc…",
+      "source": "Databricks News",
+      "impact": "中",
+      "tags": [
+        "AI 数据基础设施",
+        "Agent 生态",
+        "Databricks",
+        "Lakehouse",
+        "国际数据基础设施"
+      ],
+      "heat": 74
+    },
+    {
+      "id": "evt_20260702_6340dc13da2a",
+      "company": "Snowflake",
+      "date": "2026-07-02",
+      "type": "行业动态",
+      "title": "Press Releases | Snowflake - The AI Data Cloud",
+      "summary": "Press Releases | Snowflake - The AI Data Cloud Skip to content Snowflake World Tour hits your city See how leading teams deploy agents at scale. Find …",
+      "source": "Snowflake Press Releases",
+      "impact": "中",
+      "tags": [
+        "Agent 生态",
+        "企业认知模型",
+        "Snowflake",
+        "CoWork",
+        "CoCo",
+        "Agentic Enterprise"
+      ],
+      "heat": 74
+    },
+    {
+      "id": "evt_20260702_c3f47151cff5",
+      "company": "Palantir",
+      "date": "2026-07-02",
+      "type": "行业动态",
+      "title": "Newsroom | Palantir",
+      "summary": "Newsroom | Palantir /sitemap.xml",
+      "source": "Palantir News",
+      "impact": "低",
+      "tags": [
+        "Palantir",
+        "国际数据基础设施"
+      ],
+      "heat": 58
+    },
+    {
+      "id": "evt_20260702_c694eb15884c",
+      "company": "星环科技",
+      "date": "2026-07-02",
+      "type": "战略合作",
+      "title": "新闻资讯-星环科技",
+      "summary": "新闻资讯-星环科技 新闻资讯 关注星环科技新动态 星环科技携手香港宽频企业方案，共探金融行业AI落地新路径 近日，星环科技携手香港宽频企业方案（HKBN Enterprise Solutions）在香港举办企业AI与数据基础设施高管交流会。 发布时间：2026-06-28 聚焦AI Agent时代数…",
+      "source": "星环新闻",
+      "impact": "高",
+      "tags": [
+        "Agent 生态",
+        "国产算力生态",
+        "星环",
+        "ArgoDB",
+        "XClaw",
+        "AI-Ready"
+      ],
+      "heat": 90
+    },
+    {
+      "id": "evt_20260702_fe8137aa2090",
+      "company": "滴普科技",
+      "date": "2026-07-02",
+      "type": "战略合作",
+      "title": "滴普科技 - AI创造无限可能",
+      "summary": "滴普科技 - AI创造无限可能 DeepexiOS 行业实践 投资者关系 关于我们 企业动态 简体中文 简体中文 English 简体中文 | 简体中文 English AI级企业操作系统 DeepexiOS 平台 DeepSense工业智能体 DataSense运营智能体 DeepClaw企业基础…",
+      "source": "滴普官网",
+      "impact": "高",
+      "tags": [
+        "Agent 生态",
+        "滴普",
+        "Deepexi",
+        "DeepClaw",
+        "FastAGI",
+        "专业基础软件"
+      ],
+      "heat": 90
+    },
+    {
+      "id": "evt_20250627_061c10c6f59a",
+      "company": "DeepSeek",
+      "date": "2025-06-27",
+      "type": "行业动态",
+      "title": "v1.0.0",
+      "summary": "This release is created for archival purposes and DOI generation.",
+      "source": "DeepSeek GitHub Releases",
+      "impact": "中",
+      "tags": [
+        "模型厂商"
+      ],
+      "heat": 74
+    }
+  ],
+  "themes": [
+    {
+      "id": "theme_149a2b4513bf",
+      "name": "Agent 生态",
+      "hot": 86,
+      "delta": 8,
+      "expressions": [
+        "Agent 生态",
+        "企业认知模型",
+        "智谱",
+        "GLM",
+        "DeepSeek",
+        "推理"
+      ],
+      "companies": [
+        "智谱",
+        "DeepSeek",
+        "清微智能",
+        "Snowflake",
+        "星环科技",
+        "滴普科技"
+      ],
+      "summary": "智谱 的动态显示，“Agent 生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / DeepSeek 的动态显示，“Agent 生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / 清微智能 的动态显示，“Agent 生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / Snowflake 的动态显示，“Agent 生态”正在"
+    },
+    {
+      "id": "theme_dbfcc36fe493",
+      "name": "国产算力生态",
+      "hot": 86,
+      "delta": 8,
+      "expressions": [
+        "国产算力生态",
+        "华为",
+        "昇腾",
+        "算力/云",
+        "天数智芯",
+        "GPU"
+      ],
+      "companies": [
+        "华为昇腾",
+        "天数智芯",
+        "海光"
+      ],
+      "summary": "华为昇腾 的动态显示，“国产算力生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / 天数智芯 的动态显示，“国产算力生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / 海光 的动态显示，“国产算力生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / 华为昇腾 的动态显示，“国产算力生态”正在与企业 AI 落地、场景运营和生态"
+    },
+    {
+      "id": "theme_bd777c7d4c3b",
+      "name": "智谱",
+      "hot": 74,
+      "delta": 3,
+      "expressions": [
+        "智谱",
+        "模型厂商"
+      ],
+      "companies": [
+        "智谱"
+      ],
+      "summary": "智谱 的动态显示，“智谱”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / 智谱 的动态显示，“智谱”正在与企业 AI 落地、场景运营和生态绑定加速耦合。"
+    },
+    {
+      "id": "theme_770741bc7f7d",
+      "name": "模型厂商",
+      "hot": 74,
+      "delta": 3,
+      "expressions": [
+        "模型厂商"
+      ],
+      "companies": [
+        "DeepSeek"
+      ],
+      "summary": "DeepSeek 的动态显示，“模型厂商”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / DeepSeek 的动态显示，“模型厂商”正在与企业 AI 落地、场景运营和生态绑定加速耦合。"
+    },
+    {
+      "id": "theme_8dbb143ecdc3",
+      "name": "AI 数据基础设施",
+      "hot": 74,
+      "delta": 3,
+      "expressions": [
+        "AI 数据基础设施",
+        "Agent 生态",
+        "Databricks",
+        "Lakehouse"
+      ],
+      "companies": [
+        "Databricks"
+      ],
+      "summary": "Databricks 的动态显示，“AI 数据基础设施”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / Databricks 的动态显示，“AI 数据基础设施”正在与企业 AI 落地、场景运营和生态绑定加速耦合。"
+    },
+    {
+      "id": "theme_8e696577a9d4",
+      "name": "Palantir",
+      "hot": 60,
+      "delta": 3,
+      "expressions": [
+        "Palantir",
+        "国际数据基础设施"
+      ],
+      "companies": [
+        "Palantir"
+      ],
+      "summary": "Palantir 的动态显示，“Palantir”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / Palantir 的动态显示，“Palantir”正在与企业 AI 落地、场景运营和生态绑定加速耦合。"
+    }
+  ],
+  "viewpoints": [
+    {
+      "id": "vp_1f1c112c7104",
+      "title": "智谱 动态中的可学习表达：Agent 生态",
+      "source": "Z.ai - Inspiring AGI to Benefit Humanity",
+      "rawExpression": "Z.ai - Inspiring AGI to Benefit Humanity GLM MaaS 产品 研究 关于我们 EN 中 合作咨询 你好 我是AutoClaw 头脑风暴 …",
+      "kejieRewrite": "科杰化表达：围绕Agent 生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
+      "scenes": [
+        "领导汇报",
+        "竞对分析",
+        "售前话术",
+        "项目架构母版"
+      ],
+      "status": "母版候选"
+    },
+    {
+      "id": "vp_3f4f88275611",
+      "title": "智谱 动态中的可学习表达：智谱",
+      "source": "智谱",
+      "rawExpression": "智谱",
+      "kejieRewrite": "科杰化表达：围绕智谱，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
+      "scenes": [
+        "领导汇报",
+        "竞对分析",
+        "售前话术",
+        "项目架构母版"
+      ],
+      "status": "待审核"
+    },
+    {
+      "id": "vp_538a4c381f75",
+      "title": "DeepSeek 动态中的可学习表达：Agent 生态",
+      "source": "DeepSeek | 深度求索",
+      "rawExpression": "DeepSeek | 深度求索 欢迎加入我们，我们投身于探索 AGI 的本质，拥抱对 AI 有热情的你 查看职位 → 🎉 DeepSeek-V4 预览版本发布，具备世界顶级推理性…",
+      "kejieRewrite": "科杰化表达：围绕Agent 生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
+      "scenes": [
+        "领导汇报",
+        "竞对分析",
+        "售前话术",
+        "项目架构母版"
+      ],
+      "status": "母版候选"
+    },
+    {
+      "id": "vp_3c4fcada25d3",
+      "title": "DeepSeek 动态中的可学习表达：模型厂商",
+      "source": "v1.0.0",
+      "rawExpression": "This release is created for archival purposes and DOI generation.",
+      "kejieRewrite": "科杰化表达：围绕模型厂商，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
+      "scenes": [
+        "领导汇报",
+        "竞对分析",
+        "售前话术",
+        "项目架构母版"
+      ],
+      "status": "待审核"
+    },
+    {
+      "id": "vp_d1c8eb3163aa",
+      "title": "华为昇腾 动态中的可学习表达：国产算力生态",
+      "source": "新闻中心 - 华为",
+      "rawExpression": "新闻中心 - 华为 集团网站 选择区域/语言 返回主菜单 集团网站 企业业务网站 运营商业务网站 消费者业务网站 华为云业务网站 数字能源业务网站 返回主菜单 选择区域/语言 Au…",
+      "kejieRewrite": "科杰化表达：围绕国产算力生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
+      "scenes": [
+        "领导汇报",
+        "竞对分析",
+        "售前话术",
+        "项目架构母版"
+      ],
+      "status": "母版候选"
+    },
+    {
+      "id": "vp_7ef929e27711",
+      "title": "天数智芯 动态中的可学习表达：国产算力生态",
+      "source": "天数智芯",
+      "rawExpression": "天数智芯 首页 产品技术 产品技术 硬件 天垓系列 天垓100 天垓150 彤央系列 彤央TY1000 彤央TY1100 彤央TY1100_NX 彤央TY1200 推理系列 智铠1…",
+      "kejieRewrite": "科杰化表达：围绕国产算力生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
+      "scenes": [
+        "领导汇报",
+        "竞对分析",
+        "售前话术",
+        "项目架构母版"
+      ],
+      "status": "母版候选"
+    },
+    {
+      "id": "vp_41695572328e",
+      "title": "海光 动态中的可学习表达：国产算力生态",
+      "source": "海光--用“芯”计算未来",
+      "rawExpression": "海光--用“芯”计算未来 You need to enable JavaScript to run this app. MIT LICENSE Copyright (c) 2020…",
+      "kejieRewrite": "科杰化表达：围绕国产算力生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
+      "scenes": [
+        "领导汇报",
+        "竞对分析",
+        "售前话术",
+        "项目架构母版"
+      ],
+      "status": "待审核"
+    },
+    {
+      "id": "vp_1f40dd766ac2",
+      "title": "清微智能 动态中的可学习表达：Agent 生态",
+      "source": "清微智能",
+      "rawExpression": "清微智能 产品和技术 8系 5系 技术中心 端边协同 专业级边缘芯片 消费级边缘芯片 解决方案 关于清微 清微介绍 企业文化 新闻中心 加入我们 让可重构芯片 进入每一个计算节点 …",
+      "kejieRewrite": "科杰化表达：围绕Agent 生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
+      "scenes": [
+        "领导汇报",
+        "竞对分析",
+        "售前话术",
+        "项目架构母版"
+      ],
+      "status": "母版候选"
+    },
+    {
+      "id": "vp_80f7427f471d",
+      "title": "Databricks 动态中的可学习表达：AI 数据基础设施",
+      "source": "Press Releases",
+      "rawExpression": "Databricks Press Releases | Databricks Skip to main content Login Why Databricks Discover …",
+      "kejieRewrite": "科杰化表达：围绕AI 数据基础设施，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
+      "scenes": [
+        "领导汇报",
+        "竞对分析",
+        "售前话术",
+        "项目架构母版"
+      ],
+      "status": "待审核"
+    },
+    {
+      "id": "vp_5a5e1262eb9a",
+      "title": "Snowflake 动态中的可学习表达：Agent 生态",
+      "source": "Press Releases | Snowflake - The AI Data Cloud",
+      "rawExpression": "Press Releases | Snowflake - The AI Data Cloud Skip to content Snowflake World Tour hits y…",
+      "kejieRewrite": "科杰化表达：围绕Agent 生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
+      "scenes": [
+        "领导汇报",
+        "竞对分析",
+        "售前话术",
+        "项目架构母版"
+      ],
+      "status": "待审核"
+    },
+    {
+      "id": "vp_9a3f4b0e1df1",
+      "title": "Palantir 动态中的可学习表达：Palantir",
+      "source": "Newsroom | Palantir",
+      "rawExpression": "Newsroom | Palantir /sitemap.xml",
+      "kejieRewrite": "科杰化表达：围绕Palantir，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
+      "scenes": [
+        "领导汇报",
+        "竞对分析",
+        "售前话术",
+        "项目架构母版"
+      ],
+      "status": "待审核"
+    },
+    {
+      "id": "vp_e25e8072e662",
+      "title": "星环科技 动态中的可学习表达：Agent 生态",
+      "source": "新闻资讯-星环科技",
+      "rawExpression": "新闻资讯-星环科技 新闻资讯 关注星环科技新动态 星环科技携手香港宽频企业方案，共探金融行业AI落地新路径 近日，星环科技携手香港宽频企业方案（HKBN Enterprise So…",
+      "kejieRewrite": "科杰化表达：围绕Agent 生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
+      "scenes": [
+        "领导汇报",
+        "竞对分析",
+        "售前话术",
+        "项目架构母版"
+      ],
+      "status": "母版候选"
+    },
+    {
+      "id": "vp_03e91d028ec5",
+      "title": "滴普科技 动态中的可学习表达：Agent 生态",
+      "source": "滴普科技 - AI创造无限可能",
+      "rawExpression": "滴普科技 - AI创造无限可能 DeepexiOS 行业实践 投资者关系 关于我们 企业动态 简体中文 简体中文 English 简体中文 | 简体中文 English AI级企业…",
+      "kejieRewrite": "科杰化表达：围绕Agent 生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
+      "scenes": [
+        "领导汇报",
+        "竞对分析",
+        "售前话术",
+        "项目架构母版"
+      ],
+      "status": "母版候选"
+    }
+  ],
+  "implications": [
+    {
+      "id": "kj_461d1a398b83",
+      "category": "Agent 生态",
+      "title": "对科杰的启发：智谱｜Agent 生态",
+      "insight": "该动态提示科杰需要把“数据—认知—行动”的能力表达持续外显，既不退回传统数据平台，也不泛化为通用 Agent。",
+      "action": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。",
+      "status": "母版候选"
+    },
+    {
+      "id": "kj_3f4f88275611",
+      "category": "智谱",
+      "title": "对科杰的启发：智谱｜智谱",
+      "insight": "该动态提示科杰需要把“数据—认知—行动”的能力表达持续外显，既不退回传统数据平台，也不泛化为通用 Agent。",
+      "action": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。",
+      "status": "待审核"
+    },
+    {
+      "id": "kj_4d279dce3dc3",
+      "category": "Agent 生态",
+      "title": "对科杰的启发：DeepSeek｜Agent 生态",
+      "insight": "该动态提示科杰需要把“数据—认知—行动”的能力表达持续外显，既不退回传统数据平台，也不泛化为通用 Agent。",
+      "action": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。",
+      "status": "母版候选"
+    },
+    {
+      "id": "kj_1793bd01da40",
+      "category": "模型厂商",
+      "title": "对科杰的启发：DeepSeek｜模型厂商",
+      "insight": "该动态提示科杰需要把“数据—认知—行动”的能力表达持续外显，既不退回传统数据平台，也不泛化为通用 Agent。",
+      "action": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。",
+      "status": "待审核"
+    },
+    {
+      "id": "kj_a9a9e671f5ea",
+      "category": "国产算力生态",
+      "title": "对科杰的启发：华为昇腾｜国产算力生态",
+      "insight": "该动态提示科杰需要把“数据—认知—行动”的能力表达持续外显，既不退回传统数据平台，也不泛化为通用 Agent。",
+      "action": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。",
+      "status": "母版候选"
+    },
+    {
+      "id": "kj_4604cc09a9bd",
+      "category": "国产算力生态",
+      "title": "对科杰的启发：天数智芯｜国产算力生态",
+      "insight": "该动态提示科杰需要把“数据—认知—行动”的能力表达持续外显，既不退回传统数据平台，也不泛化为通用 Agent。",
+      "action": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。",
+      "status": "母版候选"
+    },
+    {
+      "id": "kj_1adaf660da9a",
+      "category": "国产算力生态",
+      "title": "对科杰的启发：海光｜国产算力生态",
+      "insight": "该动态提示科杰需要把“数据—认知—行动”的能力表达持续外显，既不退回传统数据平台，也不泛化为通用 Agent。",
+      "action": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。",
+      "status": "待审核"
+    },
+    {
+      "id": "kj_29308c83ff43",
+      "category": "Agent 生态",
+      "title": "对科杰的启发：清微智能｜Agent 生态",
+      "insight": "该动态提示科杰需要把“数据—认知—行动”的能力表达持续外显，既不退回传统数据平台，也不泛化为通用 Agent。",
+      "action": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。",
+      "status": "母版候选"
+    },
+    {
+      "id": "kj_db981a4c0c4d",
+      "category": "AI 数据基础设施",
+      "title": "对科杰的启发：Databricks｜AI 数据基础设施",
+      "insight": "该动态提示科杰需要把“数据—认知—行动”的能力表达持续外显，既不退回传统数据平台，也不泛化为通用 Agent。",
+      "action": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。",
+      "status": "待审核"
+    },
+    {
+      "id": "kj_38b5d6811f6c",
+      "category": "Agent 生态",
+      "title": "对科杰的启发：Snowflake｜Agent 生态",
+      "insight": "该动态提示科杰需要把“数据—认知—行动”的能力表达持续外显，既不退回传统数据平台，也不泛化为通用 Agent。",
+      "action": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。",
+      "status": "待审核"
+    },
+    {
+      "id": "kj_9a3f4b0e1df1",
+      "category": "Palantir",
+      "title": "对科杰的启发：Palantir｜Palantir",
+      "insight": "该动态提示科杰需要把“数据—认知—行动”的能力表达持续外显，既不退回传统数据平台，也不泛化为通用 Agent。",
+      "action": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。",
+      "status": "待审核"
+    },
+    {
+      "id": "kj_8f98c4243df3",
+      "category": "Agent 生态",
+      "title": "对科杰的启发：星环科技｜Agent 生态",
+      "insight": "该动态提示科杰需要把“数据—认知—行动”的能力表达持续外显，既不退回传统数据平台，也不泛化为通用 Agent。",
+      "action": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。",
+      "status": "母版候选"
+    },
+    {
+      "id": "kj_e4f28210d0e3",
+      "category": "Agent 生态",
+      "title": "对科杰的启发：滴普科技｜Agent 生态",
+      "insight": "该动态提示科杰需要把“数据—认知—行动”的能力表达持续外显，既不退回传统数据平台，也不泛化为通用 Agent。",
+      "action": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。",
+      "status": "母版候选"
+    }
+  ]
 }
