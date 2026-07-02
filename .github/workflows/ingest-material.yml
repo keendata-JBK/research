@@ -1,0 +1,57 @@
+name: Ingest Manual Material
+
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: '材料标题'
+        required: true
+        type: string
+      url:
+        description: '网页链接'
+        required: false
+        type: string
+      publisher:
+        description: '来源'
+        required: false
+        default: '手动导入'
+        type: string
+      company:
+        description: '涉及公司'
+        required: false
+        default: '待识别对象'
+        type: string
+      company_type:
+        description: '公司类型'
+        required: false
+        default: '手动材料'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Ingest material
+        run: node scripts/ingest-material.mjs
+        env:
+          MATERIAL_TITLE: ${{ inputs.title }}
+          MATERIAL_URL: ${{ inputs.url }}
+          MATERIAL_PUBLISHER: ${{ inputs.publisher }}
+          MATERIAL_COMPANY: ${{ inputs.company }}
+          MATERIAL_COMPANY_TYPE: ${{ inputs.company_type }}
+      - name: Generate leader brief
+        run: node scripts/generate-leader-brief.mjs
+      - name: Commit material analysis
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: ingest manual intelligence material'
+          file_pattern: 'public/generated/radar.json public/generated/leader-brief.json content/manual/*.md content/leader-briefs/*.md'
