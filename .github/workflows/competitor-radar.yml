@@ -2,7 +2,6 @@ name: Competitor Radar Scan
 
 on:
   schedule:
-    # 每天北京时间 08:20 自动扫描一次；需要更高频可改成多条 cron。
     - cron: '20 0 * * *'
   workflow_dispatch:
 
@@ -21,8 +20,10 @@ jobs:
           node-version: 20
       - name: Run radar scanner
         run: node scripts/scan-radar.mjs
-      - name: Commit generated radar data
+      - name: Generate leader brief
+        run: node scripts/generate-leader-brief.mjs
+      - name: Commit generated intelligence data
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'chore: update competitor radar data'
-          file_pattern: 'public/generated/radar.json content/briefs/*.md'
+          commit_message: 'chore: update competitor radar and leader brief'
+          file_pattern: 'public/generated/radar.json public/generated/leader-brief.json content/briefs/*.md content/leader-briefs/*.md'
