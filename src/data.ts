@@ -29,12 +29,12 @@ export const competitors: Competitor[] = [
 ];
 
 export const events: EventItem[] = [
-  { id: 'e1', company: '智谱', date: '2026-07-02', type: '战略合作', title: '强化地方政府与国资合作打法', summary: '围绕地方政务、国资平台和产业应用形成模型+场景+生态的联合打法。', source: '公众号 / 官网材料', impact: '高', tags: ['地方国资', '模型生态'], heat: 92 },
-  { id: 'e2', company: '中科曙光', date: '2026-06-29', type: '合作适配', title: '算力底座与 AI 数据基础设施联合方案推进', summary: '建议围绕智算中心、信创底座、湖仓一体和智能体应用形成联合市场包。', source: '内部合作进展', impact: '高', tags: ['已适配', '联合方案'], heat: 88 },
-  { id: 'e3', company: '天数智芯', date: '2026-06-26', type: '技术适配', title: '国产 GPU 适配进入清单化管理', summary: '建议形成模型训推、数据处理、KeenClaw 场景的性能与成本基线。', source: '内部合作进展', impact: '中', tags: ['国产GPU', '适配矩阵'], heat: 76 },
-  { id: 'e4', company: 'Snowflake', date: '2026-06-20', type: '产品发布', title: '强化共享上下文与 CoWork 表达', summary: '数据平台从分析工具上移到 Agent 可理解、可调用、可控制的企业上下文。', source: 'Summit / 行业观察', impact: '高', tags: ['共享上下文', 'Agentic Enterprise'], heat: 90 },
-  { id: 'e5', company: 'Databricks', date: '2026-06-15', type: '产品发布', title: 'Agent Bricks 与 Genie 工作流继续扩张', summary: 'Lakehouse 能力向企业智能体构建、评测和业务入口延伸。', source: '官方发布', impact: '中', tags: ['Agent Bricks', 'Data Intelligence'], heat: 82 },
-  { id: 'e6', company: 'DeepSeek', date: '2026-06-10', type: '生态扩散', title: '开源模型继续成为企业多模型适配重点', summary: '高性价比推理和开源生态使其适合作为科杰多模型路由与行业方案底座之一。', source: '行业文章', impact: '中', tags: ['多模型', '开源生态'], heat: 79 }
+  { id: 'e1', company: '智谱', date: '2026-07-02', type: '战略合作', title: '强化地方政府与国资合作打法', summary: '围绕地方政务、国资平台和产业应用形成模型+场景+生态的联合打法。', source: '公众号 / 官网材料', sourceUrl: 'https://www.zhipuai.cn/', impact: '高', tags: ['地方国资', '模型生态'], heat: 92 },
+  { id: 'e2', company: '中科曙光', date: '2026-06-29', type: '合作适配', title: '算力底座与 AI 数据基础设施联合方案推进', summary: '建议围绕智算中心、信创底座、湖仓一体和智能体应用形成联合市场包。', source: '内部合作进展', sourceUrl: 'https://www.sugon.com/about/news?category_id=1&time=0', impact: '高', tags: ['已适配', '联合方案'], heat: 88 },
+  { id: 'e3', company: '天数智芯', date: '2026-06-26', type: '技术适配', title: '国产 GPU 适配进入清单化管理', summary: '建议形成模型训推、数据处理、KeenClaw 场景的性能与成本基线。', source: '内部合作进展', sourceUrl: 'https://www.iluvatar.com/', impact: '中', tags: ['国产GPU', '适配矩阵'], heat: 76 },
+  { id: 'e4', company: 'Snowflake', date: '2026-06-20', type: '产品发布', title: '强化共享上下文与 CoWork 表达', summary: '数据平台从分析工具上移到 Agent 可理解、可调用、可控制的企业上下文。', source: 'Summit / 行业观察', sourceUrl: 'https://www.snowflake.com/en/blog/', impact: '高', tags: ['共享上下文', 'Agentic Enterprise'], heat: 90 },
+  { id: 'e5', company: 'Databricks', date: '2026-06-15', type: '产品发布', title: 'Agent Bricks 与 Genie 工作流继续扩张', summary: 'Lakehouse 能力向企业智能体构建、评测和业务入口延伸。', source: '官方发布', sourceUrl: 'https://www.databricks.com/blog', impact: '中', tags: ['Agent Bricks', 'Data Intelligence'], heat: 82 },
+  { id: 'e6', company: 'DeepSeek', date: '2026-06-10', type: '生态扩散', title: '开源模型继续成为企业多模型适配重点', summary: '高性价比推理和开源生态使其适合作为科杰多模型路由与行业方案底座之一。', source: '行业文章', sourceUrl: 'https://github.com/deepseek-ai', impact: '中', tags: ['多模型', '开源生态'], heat: 79 }
 ];
 
 export const themes: IndustryTheme[] = [
@@ -64,9 +64,9 @@ export const implications: KejieImplication[] = [
 ];
 
 export const sources: SourceMaterial[] = [
-  { id: 's1', title: 'Snowflake Summit 26：Goodbye Data, Hello AI', publisher: 'InfoQ / 行业观察', importedAt: '2026-06-20', summary: 'Snowflake 将数据平台表达为共享上下文和 Agentic Enterprise 的底座。', tags: ['Snowflake', 'Agent-ready'] },
-  { id: 's2', title: '智谱地方政府与国资生态合作观察', publisher: '微信公众号', importedAt: '2026-07-02', summary: '智谱从模型能力转向地方 AI 基础设施和产业融合。', tags: ['智谱', '地方政府'] },
-  { id: 's3', title: '科杰数据重构：AI 产业化时代的新基建', publisher: '内部母版材料', importedAt: '2026-07-01', summary: '数据从业务记录物变成智能生产资料，算、数、模、行构成科杰架构主线。', tags: ['项目架构母版', '数据重构'] }
+  { id: 's1', title: 'Snowflake Summit 26：Goodbye Data, Hello AI', publisher: 'InfoQ / 行业观察', url: 'https://www.snowflake.com/en/blog/', importedAt: '2026-06-20', summary: 'Snowflake 将数据平台表达为共享上下文和 Agentic Enterprise 的底座。', tags: ['Snowflake', 'Agent-ready'] },
+  { id: 's2', title: '智谱地方政府与国资生态合作观察', publisher: '微信公众号', url: 'https://www.zhipuai.cn/', importedAt: '2026-07-02', summary: '智谱从模型能力转向地方 AI 基础设施和产业融合。', tags: ['智谱', '地方政府'] },
+  { id: 's3', title: '科杰数据重构：AI 产业化时代的新基建', publisher: '内部母版材料', url: 'https://keendata-jbk.github.io/research/', importedAt: '2026-07-01', summary: '数据从业务记录物变成智能生产资料，算、数、模、行构成科杰架构主线。', tags: ['项目架构母版', '数据重构'] }
 ];
 
 export const productMoves: ProductMove[] = [

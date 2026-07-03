@@ -50,8 +50,10 @@ jobs:
           MATERIAL_COMPANY_TYPE: ${{ inputs.company_type }}
       - name: Generate leader brief
         run: node scripts/generate-leader-brief.mjs
+      - name: Update knowledge master
+        run: node scripts/generate-knowledge-master.mjs
       - name: Commit material analysis
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'chore: ingest manual intelligence material'
-          file_pattern: 'public/generated/radar.json public/generated/leader-brief.json content/manual/*.md content/leader-briefs/*.md'
+          file_pattern: 'public/generated/radar.json public/generated/leader-brief.json public/generated/knowledge-master.json content/manual/*.md content/leader-briefs/*.md content/master/snapshots/*.md'

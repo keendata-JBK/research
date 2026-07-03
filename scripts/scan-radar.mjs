@@ -69,13 +69,21 @@ async function main() {
     }
   }
 
+  const mergedSources = mergeUnique(previous.sources || [], incoming.sources).slice(0, 300);
+  const mergedEvents = mergeUnique(previous.events || [], incoming.events)
+    .map((event) => ({
+      ...event,
+      sourceUrl: event.sourceUrl || mergedSources.find((source) => source.title === event.title || source.publisher === event.source)?.url,
+    }))
+    .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+    .slice(0, 300);
   const data = {
     generatedAt: new Date().toISOString(),
     scanSummary: `扫描 ${watchlist.companies?.length || 0} 家竞合对象，新增候选 ${incoming.events.length} 条，失败 ${errors.length} 个源。`,
     watchlistCount: watchlist.companies?.length || 0,
     errors,
-    sources: mergeUnique(previous.sources || [], incoming.sources).slice(0, 300),
-    events: mergeUnique(previous.events || [], incoming.events).sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 300),
+    sources: mergedSources,
+    events: mergedEvents,
     themes: groupTheme([...(incoming.themes || []), ...(previous.themes || [])]).slice(0, 80),
     viewpoints: mergeUnique(previous.viewpoints || [], incoming.viewpoints).slice(0, 200),
     implications: mergeUnique(previous.implications || [], incoming.implications).slice(0, 200),

@@ -1,21 +1,8 @@
 {
-  "generatedAt": "2026-07-03T04:12:40.735Z",
-  "scanSummary": "扫描 13 家竞合对象，新增候选 15 条，失败 2 个源。",
+  "generatedAt": "2026-07-03T10:33:32.715Z",
+  "scanSummary": "扫描 13 家竞合对象，新增候选 17 条，失败 0 个源。",
   "watchlistCount": 13,
-  "errors": [
-    {
-      "company": "华为昇腾",
-      "source": "华为新闻",
-      "url": "https://www.huawei.com/cn/news",
-      "error": "HTTP 403"
-    },
-    {
-      "company": "中科曙光",
-      "source": "中科曙光官网新闻",
-      "url": "https://www.sugon.com/about/news?category_id=1&time=0",
-      "error": "fetch failed"
-    }
-  ],
+  "errors": [],
   "sources": [
     {
       "id": "src_4351b124afcf",
@@ -288,7 +275,8 @@
         "盘古",
         "算力/云"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.huaweicloud.com/intl/zh-cn/news.html"
     },
     {
       "id": "evt_20260703_e40dd787a59a",
@@ -307,7 +295,8 @@
         "智算",
         "液冷"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.sugon.com/about/news?category_id=1&time=0"
     },
     {
       "id": "evt_20260703_532b4b845f8a",
@@ -325,7 +314,8 @@
         "Lakehouse",
         "国际数据基础设施"
       ],
-      "heat": 74
+      "heat": 74,
+      "sourceUrl": "https://www.databricks.com/blog"
     },
     {
       "id": "evt_20260703_4f7398085d33",
@@ -344,7 +334,8 @@
         "Agentic Enterprise",
         "国际数据基础设施"
       ],
-      "heat": 74
+      "heat": 74,
+      "sourceUrl": "https://www.snowflake.com/en/blog/"
     },
     {
       "id": "evt_20260703_76110acc6d90",
@@ -363,7 +354,8 @@
         "AutoGLM",
         "Agent"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.zhipuai.cn/"
     },
     {
       "id": "evt_20260703_ac76b9c4112f",
@@ -378,7 +370,8 @@
         "智谱",
         "模型厂商"
       ],
-      "heat": 74
+      "heat": 74,
+      "sourceUrl": "https://www.zhipuai.cn/investor_relations"
     },
     {
       "id": "evt_20260703_ccb844a04531",
@@ -397,7 +390,8 @@
         "R1",
         "V3"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.deepseek.com/"
     },
     {
       "id": "evt_20260703_2e3641726b09",
@@ -414,7 +408,8 @@
         "昇腾",
         "算力/云"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.huawei.com/cn/news"
     },
     {
       "id": "evt_20260703_8dfed59956f9",
@@ -433,7 +428,8 @@
         "推理",
         "训练"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.iluvatar.com/"
     },
     {
       "id": "evt_20260703_9699552af55f",
@@ -449,7 +445,8 @@
         "海光",
         "芯片厂商"
       ],
-      "heat": 58
+      "heat": 58,
+      "sourceUrl": "https://www.hygon.cn/"
     },
     {
       "id": "evt_20260703_08bacf72594b",
@@ -468,7 +465,8 @@
         "AI 芯片",
         "算力"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.tsingmicro.com/"
     },
     {
       "id": "evt_20260703_b1cd50e4a52d",
@@ -486,7 +484,8 @@
         "Lakehouse",
         "国际数据基础设施"
       ],
-      "heat": 74
+      "heat": 74,
+      "sourceUrl": "https://www.databricks.com/company/newsroom/press-releases"
     },
     {
       "id": "evt_20260703_6340dc13da2a",
@@ -505,7 +504,8 @@
         "CoCo",
         "Agentic Enterprise"
       ],
-      "heat": 74
+      "heat": 74,
+      "sourceUrl": "https://www.snowflake.com/en/news/press-releases/"
     },
     {
       "id": "evt_20260703_c3f47151cff5",
@@ -520,7 +520,8 @@
         "Palantir",
         "国际数据基础设施"
       ],
-      "heat": 58
+      "heat": 58,
+      "sourceUrl": "https://www.palantir.com/newsroom/"
     },
     {
       "id": "evt_20260703_c694eb15884c",
@@ -539,7 +540,8 @@
         "XClaw",
         "AI-Ready"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.transwarp.cn/news"
     },
     {
       "id": "evt_20260703_fe8137aa2090",
@@ -558,7 +560,8 @@
         "FastAGI",
         "专业基础软件"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://deepexi.com/"
     },
     {
       "id": "evt_20260702_76110acc6d90",
@@ -577,7 +580,8 @@
         "AutoGLM",
         "Agent"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.zhipuai.cn/"
     },
     {
       "id": "evt_20260702_ac76b9c4112f",
@@ -592,7 +596,8 @@
         "智谱",
         "模型厂商"
       ],
-      "heat": 74
+      "heat": 74,
+      "sourceUrl": "https://www.zhipuai.cn/investor_relations"
     },
     {
       "id": "evt_20260702_ccb844a04531",
@@ -611,7 +616,8 @@
         "R1",
         "V3"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.deepseek.com/"
     },
     {
       "id": "evt_20260702_2e3641726b09",
@@ -628,7 +634,8 @@
         "昇腾",
         "算力/云"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.huawei.com/cn/news"
     },
     {
       "id": "evt_20260702_8dfed59956f9",
@@ -647,7 +654,8 @@
         "推理",
         "训练"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.iluvatar.com/"
     },
     {
       "id": "evt_20260702_9699552af55f",
@@ -663,7 +671,8 @@
         "海光",
         "芯片厂商"
       ],
-      "heat": 58
+      "heat": 58,
+      "sourceUrl": "https://www.hygon.cn/"
     },
     {
       "id": "evt_20260702_08bacf72594b",
@@ -682,7 +691,8 @@
         "AI 芯片",
         "算力"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.tsingmicro.com/"
     },
     {
       "id": "evt_20260702_b1cd50e4a52d",
@@ -700,7 +710,8 @@
         "Lakehouse",
         "国际数据基础设施"
       ],
-      "heat": 74
+      "heat": 74,
+      "sourceUrl": "https://www.databricks.com/company/newsroom/press-releases"
     },
     {
       "id": "evt_20260702_6340dc13da2a",
@@ -719,7 +730,8 @@
         "CoCo",
         "Agentic Enterprise"
       ],
-      "heat": 74
+      "heat": 74,
+      "sourceUrl": "https://www.snowflake.com/en/news/press-releases/"
     },
     {
       "id": "evt_20260702_c3f47151cff5",
@@ -734,7 +746,8 @@
         "Palantir",
         "国际数据基础设施"
       ],
-      "heat": 58
+      "heat": 58,
+      "sourceUrl": "https://www.palantir.com/newsroom/"
     },
     {
       "id": "evt_20260702_c694eb15884c",
@@ -753,7 +766,8 @@
         "XClaw",
         "AI-Ready"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://www.transwarp.cn/news"
     },
     {
       "id": "evt_20260702_fe8137aa2090",
@@ -772,7 +786,8 @@
         "FastAGI",
         "专业基础软件"
       ],
-      "heat": 90
+      "heat": 90,
+      "sourceUrl": "https://deepexi.com/"
     },
     {
       "id": "evt_20250627_061c10c6f59a",
@@ -786,7 +801,8 @@
       "tags": [
         "模型厂商"
       ],
-      "heat": 74
+      "heat": 74,
+      "sourceUrl": "https://github.com/deepseek-ai/DeepSeek-V3/releases/tag/v1.0.0"
     }
   ],
   "themes": [
@@ -815,25 +831,25 @@
       "summary": "智谱 的动态显示，“Agent 生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / DeepSeek 的动态显示，“Agent 生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / 华为昇腾 的动态显示，“Agent 生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / 清微智能 的动态显示，“Agent 生态”正在与企业 A"
     },
     {
-      "id": "theme_169135b470c0",
+      "id": "theme_dbfcc36fe493",
       "name": "国产算力生态",
       "hot": 86,
       "delta": 8,
       "expressions": [
         "国产算力生态",
-        "天数智芯",
-        "GPU",
-        "智算",
-        "海光",
-        "芯片厂商"
+        "华为",
+        "昇腾",
+        "算力/云",
+        "高质量数据集",
+        "曙光"
       ],
       "companies": [
-        "天数智芯",
-        "海光",
         "华为昇腾",
-        "中科曙光"
+        "中科曙光",
+        "天数智芯",
+        "海光"
       ],
-      "summary": "天数智芯 的动态显示，“国产算力生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / 海光 的动态显示，“国产算力生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / 华为昇腾 的动态显示，“国产算力生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / 中科曙光 的动态显示，“国产算力生态”正在与企业 AI 落地、场景运营和生态"
+      "summary": "华为昇腾 的动态显示，“国产算力生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / 中科曙光 的动态显示，“国产算力生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / 天数智芯 的动态显示，“国产算力生态”正在与企业 AI 落地、场景运营和生态绑定加速耦合。 / 海光 的动态显示，“国产算力生态”正在与企业 AI 落地、场景运营和生态"
     },
     {
       "id": "theme_bd777c7d4c3b",

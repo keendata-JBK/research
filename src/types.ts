@@ -28,9 +28,41 @@ export interface EventItem {
   title: string;
   summary: string;
   source: string;
+  sourceUrl?: string;
   impact: Impact;
   tags: string[];
   heat: number;
+}
+
+export interface KnowledgeEvidence {
+  id: string;
+  branchId: string;
+  title: string;
+  publisher: string;
+  summary: string;
+  url?: string;
+  publishedAt?: string;
+}
+
+export interface KnowledgeBranch {
+  id: string;
+  order: number;
+  title: string;
+  statement: string;
+  logic: string[];
+  scenes: string[];
+  productMapping: string[];
+}
+
+export interface KnowledgeMaster {
+  generatedAt: string;
+  version: string;
+  title: string;
+  thesis: string;
+  branches: KnowledgeBranch[];
+  evidence: KnowledgeEvidence[];
+  updates: Array<{ id: string; type: string; title: string; summary: string; source?: string; sourceUrl?: string }>;
+  stats: { branches: number; evidence: number; updates: number; candidateViewpoints: number };
 }
 
 export interface IndustryTheme {

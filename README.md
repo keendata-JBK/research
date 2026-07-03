@@ -10,6 +10,7 @@
 - 观点提炼：外部表达转化为科杰化观点。
 - 对科杰启发：定位、企业认知模型、产品架构、可信数据空间、生态绑定。
 - 导入材料：支持微信公众号链接、网页链接、复制文本、文件记录的前端解析演示。
+- 知识母版：以 Map1 和既有科杰表达为核定主线，自动吸收竞对扫描证据与观点候选。
 
 ## 本地运行
 
@@ -33,6 +34,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY=...
 ```bash
 npm run build
 npm run preview
+npm run generate:knowledge
 ```
 
 ## 部署

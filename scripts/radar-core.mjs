@@ -118,6 +118,7 @@ export function buildAnalysis(company, item) {
     title: item.title,
     summary: compact(item.content || item.title, 150),
     source: item.sourceName || company.name,
+    sourceUrl: item.url,
     impact,
     tags,
     heat: impact === '高' ? 90 : impact === '中' ? 74 : 58,

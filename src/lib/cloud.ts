@@ -57,7 +57,7 @@ export async function loadCloudSnapshot(): Promise<CloudSnapshot> {
   const db = client();
   const [competitorResult, eventResult, themeResult, viewpointResult, implicationResult, sourceResult] = await Promise.all([
     db.from('competitors').select('*, competitor_sources(*)').order('created_at', { ascending: false }),
-    db.from('competitor_events').select('*, competitors(name)').order('event_time', { ascending: false }),
+    db.from('competitor_events').select('*, competitors(name), source_materials(url)').order('event_time', { ascending: false }),
     db.from('industry_themes').select('*').order('hot', { ascending: false }),
     db.from('viewpoints').select('*').order('created_at', { ascending: false }),
     db.from('kejie_implications').select('*').order('created_at', { ascending: false }),
@@ -92,6 +92,7 @@ export async function loadCloudSnapshot(): Promise<CloudSnapshot> {
     title: row.title,
     summary: row.fact_summary || '',
     source: 'Supabase 情报库',
+    sourceUrl: row.source_materials?.url || undefined,
     impact: row.impact,
     tags: row.tags || [],
     heat: row.heat,

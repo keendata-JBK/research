@@ -93,7 +93,14 @@ research/
 - 输出 `content/leader-briefs/YYYY-MM-DD.md`。
 - `public/leader.html` 是独立移动端页面，适合领导收藏和每日查看。
 
-### 3.4 GitHub Actions
+### 3.4 知识母版自主更新
+
+- `content/master/seed-knowledge.json` 保存 Map1 与既有科杰母版的核定主线。
+- `scripts/generate-knowledge-master.mjs` 把最新雷达证据与候选观点关联到 8 个母版分支。
+- 输出 `public/generated/knowledge-master.json` 和每日 Markdown 快照。
+- 竞对扫描与手动材料导入工作流完成后都会自动重建知识母版。
+
+### 3.5 GitHub Actions
 
 已实现：
 

@@ -22,8 +22,10 @@ jobs:
         run: node scripts/scan-radar.mjs
       - name: Generate leader brief
         run: node scripts/generate-leader-brief.mjs
+      - name: Update knowledge master
+        run: node scripts/generate-knowledge-master.mjs
       - name: Commit generated intelligence data
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'chore: update competitor radar and leader brief'
-          file_pattern: 'public/generated/radar.json public/generated/leader-brief.json content/briefs/*.md content/leader-briefs/*.md'
+          file_pattern: 'public/generated/radar.json public/generated/leader-brief.json public/generated/knowledge-master.json content/briefs/*.md content/leader-briefs/*.md content/master/snapshots/*.md'

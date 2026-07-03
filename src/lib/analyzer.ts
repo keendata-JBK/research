@@ -57,6 +57,7 @@ export function analyzeMaterial(input: { title: string; publisher?: string; url?
     title,
     summary: content ? compact(content, 140) : '已登记原文链接；当前仅作为事实线索，不生成正式判断，需补充正文或通过 GitHub Actions 抓取后复核。',
     source: input.publisher || '手动导入',
+    sourceUrl: input.url,
     impact,
     tags,
     heat: impact === '高' ? 86 : impact === '中' ? 72 : 58,
