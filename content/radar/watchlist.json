@@ -33,7 +33,7 @@
       "keywords": ["华为", "昇腾", "Ascend", "Agentic Infra", "AgentArts", "ModelArts", "盘古"],
       "sources": [
         { "kind": "html", "name": "华为新闻", "url": "https://www.huawei.com/cn/news" },
-        { "kind": "html", "name": "华为云新闻", "url": "https://www.huaweicloud.com/about/news.html" }
+        { "kind": "html", "name": "华为云新闻", "url": "https://www.huaweicloud.com/intl/zh-cn/news.html" }
       ]
     },
     {
@@ -43,7 +43,7 @@
       "priority": "P0",
       "keywords": ["曙光", "中科曙光", "智算", "算力", "液冷", "存储", "AIDC"],
       "sources": [
-        { "kind": "html", "name": "中科曙光官网新闻", "url": "https://www.sugon.com/xwzx" }
+        { "kind": "html", "name": "中科曙光官网新闻", "url": "https://www.sugon.com/about/news?category_id=1&time=0" }
       ]
     },
     {
@@ -83,7 +83,7 @@
       "priority": "P0",
       "keywords": ["Databricks", "Lakehouse", "Agent Bricks", "Unity Catalog", "Data Intelligence"],
       "sources": [
-        { "kind": "rss", "name": "Databricks Blog", "url": "https://www.databricks.com/blog/rss.xml" },
+        { "kind": "html", "name": "Databricks Blog", "url": "https://www.databricks.com/blog" },
         { "kind": "html", "name": "Databricks News", "url": "https://www.databricks.com/company/newsroom/press-releases" }
       ]
     },
@@ -94,7 +94,7 @@
       "priority": "P0",
       "keywords": ["Snowflake", "Cortex", "CoWork", "CoCo", "Agentic Enterprise", "Horizon Catalog"],
       "sources": [
-        { "kind": "rss", "name": "Snowflake Blog", "url": "https://www.snowflake.com/en/feed/" },
+        { "kind": "html", "name": "Snowflake Blog", "url": "https://www.snowflake.com/en/blog/" },
         { "kind": "html", "name": "Snowflake Press Releases", "url": "https://www.snowflake.com/en/news/press-releases/" }
       ]
     },
@@ -134,14 +134,13 @@
       "status": "重点观察",
       "priority": "P1",
       "keywords": ["迅策", "实时数据", "AI Data Agent", "金融", "流计算"],
-      "sources": [
-        { "kind": "html", "name": "迅策官网", "url": "https://www.xunce.com/" }
-      ]
+      "sources": []
     }
   ],
   "wechatAccounts": [
     { "name": "智谱AI", "company": "智谱", "instruction": "复制公众号原文链接或正文，使用 ingest-material workflow 或网页导入。" },
     { "name": "华为云", "company": "华为昇腾", "instruction": "优先导入公众号深度文章，系统会自动沉淀到竞对与行业库。" },
-    { "name": "Snowflake / Databricks 行业转载", "company": "国际数据厂商", "instruction": "中文媒体/公众号转载可直接复制全文导入。" }
+    { "name": "Snowflake / Databricks 行业转载", "company": "国际数据厂商", "instruction": "中文媒体/公众号转载可直接复制全文导入。" },
+    { "name": "迅策科技", "company": "迅策科技", "instruction": "官网当前 TLS 连接不稳定，优先在平台登记公众号链接或复制正文。" }
   ]
 }

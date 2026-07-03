@@ -1,5 +1,11 @@
 export type Impact = '高' | '中' | '低';
-export type ReviewStatus = '待审核' | '已发布' | '母版候选' | '已同步';
+export type ReviewStatus = '待审核' | '已精选' | '已改写' | '已发布' | '母版候选' | '已同步' | '已归档';
+
+export interface SourceRef {
+  name: string;
+  kind: '公众号' | '官网' | 'RSS' | '研报' | '内部材料';
+  url?: string;
+}
 
 export interface Competitor {
   id: string;
@@ -10,6 +16,8 @@ export interface Competitor {
   summary: string;
   tags: string[];
   cooperation: string;
+  priority?: 'P0' | 'P1' | 'P2';
+  sources?: SourceRef[];
 }
 
 export interface EventItem {
@@ -33,6 +41,8 @@ export interface IndustryTheme {
   delta: number;
   expressions: string[];
   companies: string[];
+  kejieAngle?: string;
+  evidence?: string[];
 }
 
 export interface Viewpoint {
@@ -43,6 +53,10 @@ export interface Viewpoint {
   kejieRewrite: string;
   scenes: string[];
   status: ReviewStatus;
+  sourceIds?: string[];
+  confidence?: '高' | '中' | '低';
+  mapBranch?: string;
+  reasoning?: string[];
 }
 
 export interface KejieImplication {
@@ -52,6 +66,10 @@ export interface KejieImplication {
   insight: string;
   action: string;
   status: ReviewStatus;
+  owner?: string;
+  priority?: '高' | '中' | '低';
+  sourceIds?: string[];
+  productMoves?: string[];
 }
 
 export interface SourceMaterial {
@@ -62,4 +80,18 @@ export interface SourceMaterial {
   importedAt: string;
   summary: string;
   tags: string[];
+  status?: '待补全文' | '待处理' | '已处理' | '已归档';
+  company?: string;
+  evidence?: string;
+}
+
+export interface ProductMove {
+  id: string;
+  product: string;
+  direction: string;
+  competitorSignal: string;
+  currentGap: string;
+  nextRelease: string;
+  owner: string;
+  priority: 'P0' | 'P1' | 'P2';
 }
