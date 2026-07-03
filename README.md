@@ -15,8 +15,18 @@
 
 ```bash
 npm install
+cp .env.example .env.local
 npm run dev
 ```
+
+`.env.local` 使用 Vite 变量名：
+
+```text
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_PUBLISHABLE_KEY=...
+```
+
+本项目不是 Next.js，不使用 `@supabase/ssr`、`next/headers` 或 middleware。数据库结构位于 `supabase/migrations/`，前端连接封装位于 `src/lib/supabase.ts`，云端读写封装位于 `src/lib/cloud.ts`。
 
 ## 构建
 
@@ -29,4 +39,9 @@ npm run preview
 
 已内置 GitHub Pages workflow：`.github/workflows/deploy.yml`。
 
-需要在仓库 Settings → Pages 中选择 GitHub Actions。
+需要在仓库 Settings → Pages 中选择 GitHub Actions，并配置仓库 Variables：
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+数据库密码与 `service_role` 密钥严禁写入前端、环境示例或 GitHub Pages 构建变量。

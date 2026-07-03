@@ -7,6 +7,19 @@ import {
 } from 'lucide-react';
 import { analyzeMaterial } from './lib/analyzer';
 import {
+  deleteCompetitor as deleteCloudCompetitor,
+  getCurrentUser,
+  getProfile,
+  loadCloudSnapshot,
+  saveAnalyzedMaterial,
+  saveCompetitor as saveCloudCompetitor,
+  sendMagicLink,
+  signOut as cloudSignOut,
+  type CloudProfile,
+  type CloudSnapshot,
+} from './lib/cloud';
+import { isSupabaseConfigured, supabase } from './lib/supabase';
+import {
   competitors as seedCompetitors, events as seedEvents, implications as seedImplications,
   productMoves, sources as seedSources, themes as seedThemes, viewpoints as seedViewpoints,
 } from './data';
@@ -18,9 +31,11 @@ type Page = 'home' | 'brief' | 'competitors' | 'industry' | 'viewpoints' | 'keji
 type RuntimeData = { events: EventItem[]; themes: IndustryTheme[]; viewpoints: Viewpoint[]; implications: KejieImplication[]; sources: SourceMaterial[] };
 type GeneratedRadar = RuntimeData & { generatedAt?: string; scanSummary?: string; watchlistCount?: number };
 type LeaderBrief = { generatedAt?: string; title?: string; summary?: string; topSignals?: Array<EventItem & { whyItMatters?: string }>; actions?: Array<{ owner: string; title: string; detail: string; priority: string }>; keyQuestions?: string[]; riskWarnings?: string[] };
+type CloudStatus = '未配置' | '未登录' | '连接中' | '已连接' | '同步失败';
 
 const STORAGE_KEY = 'keendata-strategy-hub-runtime-v2';
 const COMPETITOR_KEY = 'keendata-strategy-hub-competitors-v2';
+const EMPTY_CLOUD: CloudSnapshot = { competitors: [], events: [], themes: [], viewpoints: [], implications: [], sources: [] };
 
 function readStorage<T>(key: string, fallback: T): T {
   try { return JSON.parse(localStorage.getItem(key) || '') as T; } catch { return fallback; }
@@ -161,17 +176,52 @@ function SearchPage({ events, themes, implications, viewpoints }: { events: Even
   return <div className="page-grid"><PageIntro eyebrow="KNOWLEDGE SEARCH" title="全局搜索" description="跨竞对事件、行业主题、观点和科杰启发检索。" /><section className="panel"><div className="search-big"><Search size={20} /><input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="搜索公司、产品、观点、可信数据空间…" /></div><div className="candidate-grid">{results.map((item, i) => <article key={`${item.type}-${item.title}-${i}`}><span>{item.type}</span><h3>{item.title}</h3><p>{item.body}</p></article>)}</div>{q && !results.length && <div className="empty-state">没有找到匹配内容</div>}</section></div>;
 }
 
+function CloudSettingsPage({ status, profile, message, onSendLink, onSignOut }: { status: CloudStatus; profile: CloudProfile | null; message: string; onSendLink: (email: string) => Promise<void>; onSignOut: () => Promise<void> }) {
+  const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!email.trim()) return;
+    setSubmitting(true);
+    try { await onSendLink(email.trim()); } finally { setSubmitting(false); }
+  }
+  return <div className="page-grid"><PageIntro eyebrow="CLOUD DATA" title="设置" description="Supabase 负责团队共享、权限控制和材料留痕；本机缓存仅作为离线兜底。" /><section className="panel cloud-settings"><div className="panel-head"><div><h2>云端数据连接</h2><p>项目：keendata-strategy-hub</p></div><span className={`cloud-badge cloud-${status}`}>{status}</span></div><div className="cloud-summary"><div><small>数据区域</small><strong>Supabase PostgreSQL</strong></div><div><small>访问策略</small><strong>登录可读，编辑角色可写</strong></div><div><small>当前身份</small><strong>{profile ? `${profile.displayName}｜${profile.role}` : '尚未登录'}</strong></div></div>{status === '未登录' && <form className="cloud-login" onSubmit={submit}><label>工作邮箱<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@keendata.com.cn" required /></label><button className="primary" type="submit" disabled={submitting}>{submitting ? '发送中…' : '发送登录链接'}</button><p>首次登录账号自动成为管理员；后续账号默认只读，由管理员分配 editor / reviewer 权限。</p></form>}{status === '已连接' && <div className="cloud-actions"><div className="success-box"><CheckCircle2 size={18} /><span>新增竞合对象和导入材料会同时写入 Supabase。</span></div><button className="secondary" onClick={onSignOut}>退出云端账号</button></div>}{status === '未配置' && <div className="warning-box cloud-message">缺少 VITE_SUPABASE_URL 或 VITE_SUPABASE_PUBLISHABLE_KEY。</div>}{message && <div className="cloud-message">{message}</div>}</section><section className="panel"><div className="panel-head"><h2>安全边界</h2></div><p>Publishable Key 可以出现在浏览器构建中，真正的数据安全由登录会话和数据库 RLS 策略保证。数据库密码和 service_role 密钥不得写入前端或 GitHub 仓库。</p></section></div>;
+}
+
 function SimplePage({ title, children }: { title: string; children: React.ReactNode }) { return <div className="page-grid"><PageIntro title={title} description="平台运行与内容资产概览" /><section className="panel simple-body">{children}</section></div>; }
 
 export default function App() {
-  const [page, setPage] = useState<Page>('home'); const [mobileOpen, setMobileOpen] = useState(false); const [runtime, setRuntime] = useState<RuntimeData>(() => readStorage(STORAGE_KEY, { events: [], themes: [], viewpoints: [], implications: [], sources: [] })); const [customCompetitors, setCustomCompetitors] = useState<Competitor[]>(() => readStorage(COMPETITOR_KEY, [])); const [remote, setRemote] = useState<GeneratedRadar | null>(null); const [query, setQuery] = useState(''); const [importTarget, setImportTarget] = useState('');
+  const [page, setPage] = useState<Page>('home'); const [mobileOpen, setMobileOpen] = useState(false); const [runtime, setRuntime] = useState<RuntimeData>(() => readStorage(STORAGE_KEY, { events: [], themes: [], viewpoints: [], implications: [], sources: [] })); const [customCompetitors, setCustomCompetitors] = useState<Competitor[]>(() => readStorage(COMPETITOR_KEY, [])); const [remote, setRemote] = useState<GeneratedRadar | null>(null); const [query, setQuery] = useState(''); const [importTarget, setImportTarget] = useState(''); const [cloud, setCloud] = useState<CloudSnapshot>(EMPTY_CLOUD); const [cloudStatus, setCloudStatus] = useState<CloudStatus>(isSupabaseConfigured ? '连接中' : '未配置'); const [cloudProfile, setCloudProfile] = useState<CloudProfile | null>(null); const [cloudMessage, setCloudMessage] = useState('');
   useEffect(() => { fetch(`${import.meta.env.BASE_URL}generated/radar.json?ts=${Date.now()}`).then((r) => r.ok ? r.json() : null).then(setRemote).catch(() => setRemote(null)); }, []);
+  useEffect(() => {
+    if (!supabase) return;
+    let active = true;
+    async function hydrate() {
+      try {
+        const user = await getCurrentUser();
+        if (!active) return;
+        if (!user) { setCloudStatus('未登录'); setCloudProfile(null); setCloud(EMPTY_CLOUD); return; }
+        setCloudStatus('连接中');
+        const [profile, snapshot] = await Promise.all([getProfile(user), loadCloudSnapshot()]);
+        if (!active) return;
+        setCloudProfile(profile); setCloud(snapshot); setCloudStatus('已连接'); setCloudMessage('');
+      } catch (error) {
+        if (!active) return;
+        setCloudStatus('同步失败'); setCloudMessage(error instanceof Error ? error.message : '云端同步失败');
+      }
+    }
+    void hydrate();
+    const { data: authListener } = supabase.auth.onAuthStateChange(() => { window.setTimeout(() => void hydrate(), 0); });
+    return () => { active = false; authListener.subscription.unsubscribe(); };
+  }, []);
   const remoteData: RuntimeData = remote || { events: [], themes: [], viewpoints: [], implications: [], sources: [] };
-  const events = uniqueById([...runtime.events, ...remoteData.events, ...seedEvents]); const themes = uniqueById([...runtime.themes, ...remoteData.themes, ...seedThemes]); const viewpoints = uniqueById([...runtime.viewpoints, ...remoteData.viewpoints, ...seedViewpoints]); const implications = uniqueById([...runtime.implications, ...remoteData.implications, ...seedImplications]); const sources = uniqueById([...runtime.sources, ...remoteData.sources, ...seedSources]); const competitors = uniqueById([...customCompetitors, ...seedCompetitors]);
+  const events = uniqueById([...cloud.events, ...runtime.events, ...remoteData.events, ...seedEvents]); const themes = uniqueById([...cloud.themes, ...runtime.themes, ...remoteData.themes, ...seedThemes]); const viewpoints = uniqueById([...cloud.viewpoints, ...runtime.viewpoints, ...remoteData.viewpoints, ...seedViewpoints]); const implications = uniqueById([...cloud.implications, ...runtime.implications, ...remoteData.implications, ...seedImplications]); const sources = uniqueById([...cloud.sources, ...runtime.sources, ...remoteData.sources, ...seedSources]); const competitors = uniqueById([...cloud.competitors, ...customCompetitors, ...seedCompetitors]);
   function saveRuntime(next: RuntimeData) { setRuntime(next); writeStorage(STORAGE_KEY, next); }
-  function onImport(payload: ReturnType<typeof analyzeMaterial>) { saveRuntime({ events: [payload.event, ...runtime.events], themes: [payload.theme, ...runtime.themes], viewpoints: [payload.viewpoint, ...runtime.viewpoints], implications: [payload.implication, ...runtime.implications], sources: [payload.source, ...runtime.sources] }); }
-  function addCompetitor(item: Competitor) { const next = [item, ...customCompetitors]; setCustomCompetitors(next); writeStorage(COMPETITOR_KEY, next); }
-  function removeCompetitor(id: string) { const next = customCompetitors.filter((item) => item.id !== id); setCustomCompetitors(next); writeStorage(COMPETITOR_KEY, next); }
+  function onImport(payload: ReturnType<typeof analyzeMaterial>) { saveRuntime({ events: [payload.event, ...runtime.events], themes: [payload.theme, ...runtime.themes], viewpoints: [payload.viewpoint, ...runtime.viewpoints], implications: [payload.implication, ...runtime.implications], sources: [payload.source, ...runtime.sources] }); if (cloudStatus === '已连接') void saveAnalyzedMaterial(payload).then(() => setCloudMessage('材料已同步到 Supabase')).catch((error) => { setCloudStatus('同步失败'); setCloudMessage(`本机已保存，云端写入失败：${error.message}`); }); }
+  function addCompetitor(item: Competitor) { const next = [item, ...customCompetitors]; setCustomCompetitors(next); writeStorage(COMPETITOR_KEY, next); if (cloudStatus === '已连接') void saveCloudCompetitor(item).then(() => setCloudMessage('竞合对象已同步到 Supabase')).catch((error) => { setCloudStatus('同步失败'); setCloudMessage(`本机已保存，云端写入失败：${error.message}`); }); }
+  function removeCompetitor(id: string) { const target = competitors.find((item) => item.id === id); const next = customCompetitors.filter((item) => item.id !== id); setCustomCompetitors(next); writeStorage(COMPETITOR_KEY, next); if (target && cloudStatus === '已连接') void deleteCloudCompetitor(target).catch((error) => setCloudMessage(`云端删除失败：${error.message}`)); }
+  async function requestLogin(email: string) { try { await sendMagicLink(email); setCloudMessage(`登录链接已发送至 ${email}，请在同一浏览器打开邮件完成登录。`); } catch (error) { setCloudMessage(error instanceof Error ? error.message : '发送登录链接失败'); } }
+  async function logout() { try { await cloudSignOut(); setCloud(EMPTY_CLOUD); setCloudProfile(null); setCloudStatus('未登录'); setCloudMessage('已退出云端账号，本机缓存仍保留。'); } catch (error) { setCloudMessage(error instanceof Error ? error.message : '退出失败'); } }
   function importFor(company: string) { setImportTarget(company); setPage('import'); }
   function createViewpoint(theme: IndustryTheme) { const item: Viewpoint = { id: `vp_theme_${Date.now()}`, title: `${theme.name}：从行业共识到科杰表达`, source: `行业主题｜${theme.name}`, rawExpression: theme.expressions.join(' / '), kejieRewrite: theme.kejieAngle || `科杰应把${theme.name}纳入“数据—认知—行动”产品架构，并明确产品承载和版本动作。`, scenes: ['领导汇报', '产品路线', '售前方案'], status: '待审核', confidence: '中', reasoning: ['聚合同主题厂商表达', '识别共同产品方向', '映射科杰三层架构'] }; saveRuntime({ ...runtime, viewpoints: [item, ...runtime.viewpoints] }); setPage('viewpoints'); }
   function promoteViewpoint(item: Viewpoint) { saveRuntime({ ...runtime, viewpoints: [{ ...item, status: '母版候选' }, ...runtime.viewpoints.filter((v) => v.id !== item.id)] }); }
@@ -187,8 +237,8 @@ export default function App() {
     case 'reports': return <SimplePage title="报告中心"><h2>内容资产</h2><p>已收录材料 {sources.length} 条、竞对事件 {events.length} 条、行业主题 {themes.length} 个、观点 {viewpoints.length} 条。</p><p>最近自动扫描：{remote?.generatedAt ? new Date(remote.generatedAt).toLocaleString() : '尚未运行'}。</p><a className="primary link-button" href={`${import.meta.env.BASE_URL}leader.html`} target="_blank" rel="noreferrer">打开领导简报</a></SimplePage>;
     case 'import': return <ImportPage companyTarget={importTarget} competitors={competitors} onImport={onImport} />;
     case 'search': return <SearchPage events={events} themes={themes} implications={implications} viewpoints={viewpoints} />;
-    case 'settings': return <SimplePage title="设置"><h2>运行边界</h2><p>当前为 GitHub Pages 轻量版。公众号链接支持登记，但无法保证浏览器端自动抓取全文；推荐复制正文或使用 GitHub Actions。</p><p>自动生成内容为候选分析，正式结论需人工审核。</p></SimplePage>;
+    case 'settings': return <CloudSettingsPage status={cloudStatus} profile={cloudProfile} message={cloudMessage} onSendLink={requestLogin} onSignOut={logout} />;
     default: return null;
   } })();
-  return <div className="app-shell"><aside className={`sidebar ${mobileOpen ? 'open' : ''}`}><div className="sidebar-top"><Logo /><button className="close-mobile" aria-label="关闭菜单" onClick={() => setMobileOpen(false)}><X size={18} /></button></div><p className="sidebar-desc">战略情报 · 行业洞察 · 产品行动<br />让外部变化持续进入科杰版本规划</p><nav>{navItems.map((item) => <button key={item.key} className={page === item.key ? 'active' : ''} onClick={() => { setPage(item.key); setMobileOpen(false); }}>{item.icon}<span>{item.label}</span></button>)}</nav><div className="review-note"><ShieldCheck size={18} /><div><strong>候选分析机制</strong><span>AI 生成，人工审核后发布</span></div></div></aside><main className="main"><header className="topbar"><button className="mobile-menu" aria-label="打开菜单" onClick={() => setMobileOpen(true)}><Menu size={20} /></button><div className="top-title"><strong>{navItems.find((item) => item.key === page)?.label}</strong><span>科杰战略情报与认知共创平台</span></div><div className="top-search"><Search size={16} /><input value={query} onChange={(e) => { setQuery(e.target.value); setPage('search'); }} placeholder="搜索竞对、行业、观点、产品…" /></div><button className="icon-btn" aria-label="通知"><Bell size={18} /></button></header>{query && page === 'search' ? <SearchPage events={events} themes={themes} implications={implications} viewpoints={viewpoints} /> : pageNode}</main></div>;
+  return <div className="app-shell"><aside className={`sidebar ${mobileOpen ? 'open' : ''}`}><div className="sidebar-top"><Logo /><button className="close-mobile" aria-label="关闭菜单" onClick={() => setMobileOpen(false)}><X size={18} /></button></div><p className="sidebar-desc">战略情报 · 行业洞察 · 产品行动<br />让外部变化持续进入科杰版本规划</p><nav>{navItems.map((item) => <button key={item.key} className={page === item.key ? 'active' : ''} onClick={() => { setPage(item.key); setMobileOpen(false); }}>{item.icon}<span>{item.label}</span></button>)}</nav><div className="review-note"><ShieldCheck size={18} /><div><strong>候选分析机制</strong><span>AI 生成，人工审核后发布</span></div></div></aside><main className="main"><header className="topbar"><button className="mobile-menu" aria-label="打开菜单" onClick={() => setMobileOpen(true)}><Menu size={20} /></button><div className="top-title"><strong>{navItems.find((item) => item.key === page)?.label}</strong><span>科杰战略情报与认知共创平台</span></div><div className="top-search"><Search size={16} /><input value={query} onChange={(e) => { setQuery(e.target.value); setPage('search'); }} placeholder="搜索竞对、行业、观点、产品…" /></div><button className={`cloud-indicator cloud-${cloudStatus}`} onClick={() => setPage('settings')} title="查看云端连接状态"><span />{cloudStatus}</button><button className="icon-btn" aria-label="通知"><Bell size={18} /></button></header>{query && page === 'search' ? <SearchPage events={events} themes={themes} implications={implications} viewpoints={viewpoints} /> : pageNode}</main></div>;
 }
