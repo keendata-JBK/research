@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-07-04T04:05:47.461Z",
-  "version": "1.0.20260704",
+  "generatedAt": "2026-07-05T04:33:34.654Z",
+  "version": "1.0.20260705",
   "title": "科杰数据重构知识母版",
   "thesis": "以 AI 数据基础设施重构数据供给，以企业认知模型沉淀组织上下文，以 KeenClaw 驱动智能体进入业务行动闭环。",
   "branches": [
@@ -324,7 +324,7 @@
   ],
   "updates": [
     {
-      "id": "vp_6dc560b9577b",
+      "id": "vp_60b7b07fb0b3",
       "type": "观点候选",
       "title": "智谱 动态中的可学习表达：Agent 生态",
       "summary": "科杰化表达：围绕Agent 生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
@@ -332,7 +332,7 @@
       "sourceUrl": "https://www.zhipuai.cn/"
     },
     {
-      "id": "vp_1c1a2f0fc294",
+      "id": "vp_037375f0466f",
       "type": "观点候选",
       "title": "智谱 动态中的可学习表达：智谱",
       "summary": "科杰化表达：围绕智谱，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
@@ -340,7 +340,7 @@
       "sourceUrl": "https://www.zhipuai.cn/investor_relations"
     },
     {
-      "id": "vp_ad14926c463c",
+      "id": "vp_b7b86b92ddc4",
       "type": "观点候选",
       "title": "DeepSeek 动态中的可学习表达：Agent 生态",
       "summary": "科杰化表达：围绕Agent 生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
@@ -348,7 +348,7 @@
       "sourceUrl": "https://www.deepseek.com/"
     },
     {
-      "id": "vp_4872dd5cee2d",
+      "id": "vp_63d8a591c9f2",
       "type": "观点候选",
       "title": "华为昇腾 动态中的可学习表达：Agent 生态",
       "summary": "科杰化表达：围绕Agent 生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
@@ -356,7 +356,7 @@
       "sourceUrl": "https://www.huaweicloud.com/intl/zh-cn/news.html"
     },
     {
-      "id": "vp_813689bd290b",
+      "id": "vp_2ebda9313f86",
       "type": "观点候选",
       "title": "天数智芯 动态中的可学习表达：国产算力生态",
       "summary": "科杰化表达：围绕国产算力生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
@@ -364,7 +364,7 @@
       "sourceUrl": "https://www.iluvatar.com/"
     },
     {
-      "id": "vp_348f7fed4104",
+      "id": "vp_7513edadba02",
       "type": "观点候选",
       "title": "海光 动态中的可学习表达：国产算力生态",
       "summary": "科杰化表达：围绕国产算力生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
@@ -372,7 +372,7 @@
       "sourceUrl": "https://www.hygon.cn/"
     },
     {
-      "id": "vp_fcf449e41d16",
+      "id": "vp_db714b303146",
       "type": "观点候选",
       "title": "清微智能 动态中的可学习表达：Agent 生态",
       "summary": "科杰化表达：围绕Agent 生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
@@ -380,7 +380,7 @@
       "sourceUrl": "https://www.tsingmicro.com/"
     },
     {
-      "id": "vp_ca1382e1e976",
+      "id": "vp_3c7739b17f90",
       "type": "观点候选",
       "title": "Databricks 动态中的可学习表达：AI 数据基础设施",
       "summary": "科杰化表达：围绕AI 数据基础设施，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
@@ -388,7 +388,7 @@
       "sourceUrl": "https://www.databricks.com/blog"
     },
     {
-      "id": "vp_1d2349d11d08",
+      "id": "vp_776ea8090894",
       "type": "观点候选",
       "title": "Databricks 动态中的可学习表达：AI 数据基础设施",
       "summary": "科杰化表达：围绕AI 数据基础设施，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
@@ -396,7 +396,7 @@
       "sourceUrl": "https://www.databricks.com/company/newsroom/press-releases"
     },
     {
-      "id": "vp_61ac027e58e2",
+      "id": "vp_9224616c1a17",
       "type": "观点候选",
       "title": "Snowflake 动态中的可学习表达：Agent 生态",
       "summary": "科杰化表达：围绕Agent 生态，以 AI 数据基础设施为根基，把外部能力转化为企业认知模型、KeenClaw 行动入口和场景运营闭环。",
@@ -404,37 +404,37 @@
       "sourceUrl": "https://www.snowflake.com/en/blog/"
     },
     {
-      "id": "kj_efa79c90e65e",
+      "id": "kj_0ec5f3da4145",
       "type": "科杰启发",
       "title": "对科杰的启发：智谱｜Agent 生态",
       "summary": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。"
     },
     {
-      "id": "kj_1c1a2f0fc294",
+      "id": "kj_037375f0466f",
       "type": "科杰启发",
       "title": "对科杰的启发：智谱｜智谱",
       "summary": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。"
     },
     {
-      "id": "kj_4f110b380ce2",
+      "id": "kj_a54fa56e5839",
       "type": "科杰启发",
       "title": "对科杰的启发：DeepSeek｜Agent 生态",
       "summary": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。"
     },
     {
-      "id": "kj_464e78fc0f6e",
+      "id": "kj_37ace9ea1151",
       "type": "科杰启发",
       "title": "对科杰的启发：华为昇腾｜Agent 生态",
       "summary": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。"
     },
     {
-      "id": "kj_46fd93dde71d",
+      "id": "kj_d3fee63336aa",
       "type": "科杰启发",
       "title": "对科杰的启发：天数智芯｜国产算力生态",
       "summary": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。"
     },
     {
-      "id": "kj_b4c77691521f",
+      "id": "kj_582cf8dc098d",
       "type": "科杰启发",
       "title": "对科杰的启发：海光｜国产算力生态",
       "summary": "建议由战略合作、产品和售前共同判断是否形成联合方案、适配清单或母版候选。"
@@ -444,6 +444,6 @@
     "branches": 8,
     "evidence": 17,
     "updates": 16,
-    "candidateViewpoints": 23
+    "candidateViewpoints": 30
   }
 }
