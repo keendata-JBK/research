@@ -1,14 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  ArrowRight, Bell, BookOpen, BrainCircuit, Building2, CheckCircle2, ChevronRight,
-  Clipboard, Compass, ExternalLink, FileText, Filter, Flame, Home, Layers3,
-  Lightbulb, Link2, Menu, Plus, Search, Settings, ShieldCheck, Sparkles,
-  Target, TrendingUp, UploadCloud, X,
-} from 'lucide-react';
+  ArrowLeft,
+  ArrowSquareOut,
+  CaretDown,
+  Check,
+  DownloadSimple,
+  FilePdf,
+  LinkSimple,
+  MagnifyingGlass,
+  Plus,
+  SpinnerGap,
+  UploadSimple,
+  UserCircle,
+  X,
+} from '@phosphor-icons/react';
 import { analyzeMaterial } from './lib/analyzer';
-import { KnowledgeMasterPanel } from './components/KnowledgeMasterPanel';
+import { exportLatestPdf } from './lib/exportPdf';
+import { readWechatArticle } from './lib/wechat';
 import {
-  deleteCompetitor as deleteCloudCompetitor,
   getCurrentUser,
   getProfile,
   loadCloudSnapshot,
@@ -20,190 +29,343 @@ import {
   type CloudSnapshot,
 } from './lib/cloud';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
-import { getOfficialSources } from './sourceDirectory';
 import {
-  competitors as seedCompetitors, events as seedEvents, implications as seedImplications,
-  productMoves, sources as seedSources, themes as seedThemes, viewpoints as seedViewpoints,
+  competitors as seedCompetitors,
+  events as seedEvents,
+  implications as seedImplications,
+  themes as seedThemes,
+  sources as seedSources,
+  viewpoints as seedViewpoints,
 } from './data';
-import type {
-  Competitor, EventItem, IndustryTheme, KejieImplication, KnowledgeMaster, SourceMaterial, Viewpoint,
-} from './types';
+import type { Competitor, EventItem, IndustryTheme, KejieImplication, SourceMaterial, Viewpoint } from './types';
 
-type Page = 'home' | 'brief' | 'competitors' | 'industry' | 'viewpoints' | 'kejie' | 'master' | 'reports' | 'import' | 'search' | 'settings';
-type RuntimeData = { events: EventItem[]; themes: IndustryTheme[]; viewpoints: Viewpoint[]; implications: KejieImplication[]; sources: SourceMaterial[] };
-type GeneratedRadar = RuntimeData & { generatedAt?: string; scanSummary?: string; watchlistCount?: number };
-type LeaderBrief = { generatedAt?: string; title?: string; summary?: string; topSignals?: Array<EventItem & { whyItMatters?: string }>; actions?: Array<{ owner: string; title: string; detail: string; priority: string }>; keyQuestions?: string[]; riskWarnings?: string[] };
+type Tab = 'competitors' | 'industry' | 'kejie';
 type CloudStatus = '未配置' | '未登录' | '连接中' | '已连接' | '同步失败';
-type ImportPrefill = { company: string; url?: string; publisher?: string };
+type RuntimeData = {
+  events: EventItem[];
+  themes: IndustryTheme[];
+  viewpoints: Viewpoint[];
+  implications: KejieImplication[];
+  sources: SourceMaterial[];
+};
+type GeneratedRadar = RuntimeData & { generatedAt?: string };
+type AnalysisPayload = ReturnType<typeof analyzeMaterial>;
 
 const STORAGE_KEY = 'keendata-strategy-hub-runtime-v2';
 const COMPETITOR_KEY = 'keendata-strategy-hub-competitors-v2';
 const EMPTY_CLOUD: CloudSnapshot = { competitors: [], events: [], themes: [], viewpoints: [], implications: [], sources: [] };
+const EMPTY_RUNTIME: RuntimeData = { events: [], themes: [], viewpoints: [], implications: [], sources: [] };
 
 function readStorage<T>(key: string, fallback: T): T {
   try { return JSON.parse(localStorage.getItem(key) || '') as T; } catch { return fallback; }
 }
 
-function writeStorage(key: string, value: unknown) { localStorage.setItem(key, JSON.stringify(value)); }
-function uniqueById<T extends { id: string }>(items: T[]) { return [...new Map(items.map((item) => [item.id, item])).values()]; }
-function impactClass(impact: EventItem['impact']) { return impact === '高' ? 'danger' : impact === '中' ? 'warning' : 'muted'; }
+function writeStorage(key: string, value: unknown) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function uniqueById<T extends { id: string }>(items: T[]) {
+  return [...new Map(items.map((item) => [item.id, item])).values()];
+}
+
+function sortEvents(events: EventItem[]) {
+  return [...events].sort((a, b) => `${b.date}-${b.id}`.localeCompare(`${a.date}-${a.id}`));
+}
+
+function formatDate(value?: string) {
+  if (!value) return '待确认';
+  const date = new Date(`${value}T08:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit' }).format(date);
+}
+
+function dateGroup(value: string) {
+  const today = new Date();
+  const target = new Date(`${value}T08:00:00`);
+  const day = Math.round((new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime() - target.getTime()) / 86400000);
+  if (day === 0) return '今天';
+  if (day === 1) return '昨天';
+  return `${target.getMonth() + 1}月${target.getDate()}日`;
+}
+
+function detailFor(event: EventItem) {
+  const tagText = event.tags.length ? event.tags.join('、') : '企业 AI';
+  return {
+    happened: event.whatHappened || event.summary,
+    expression: event.competitorExpression || `围绕“${tagText}”强化产品能力、行业落地与生态协同。`,
+    meaning: event.strategicMeaning || `${event.company}正在通过${event.type}争夺企业 AI 落地入口，竞争焦点由单点技术扩展到数据、模型与业务行动的协同。`,
+    impact: event.kejieImpact || '科杰应继续强化 AI 数据基础设施定位，把外部变化映射到企业认知模型、产品架构与可信数据空间的升级路线。',
+  };
+}
 
 function Logo() {
-  return <div className="brand"><img src={`${import.meta.env.BASE_URL}assets/keendata-logo.png`} alt="科杰科技 Keen Data" /></div>;
-}
-
-const navItems: { key: Page; label: string; icon: React.ReactNode }[] = [
-  { key: 'home', label: '首页', icon: <Home size={18} /> },
-  { key: 'brief', label: '3分钟简报', icon: <Target size={18} /> },
-  { key: 'competitors', label: '竞对分析', icon: <Building2 size={18} /> },
-  { key: 'industry', label: '行业分析', icon: <Compass size={18} /> },
-  { key: 'viewpoints', label: '观点提炼', icon: <BrainCircuit size={18} /> },
-  { key: 'kejie', label: '对科杰启发', icon: <Lightbulb size={18} /> },
-  { key: 'master', label: '母版候选池', icon: <ShieldCheck size={18} /> },
-  { key: 'reports', label: '报告中心', icon: <FileText size={18} /> },
-  { key: 'import', label: '导入材料', icon: <UploadCloud size={18} /> },
-  { key: 'search', label: '搜索', icon: <Search size={18} /> },
-  { key: 'settings', label: '设置', icon: <Settings size={18} /> },
-];
-
-function PageIntro({ eyebrow, title, description, action }: { eyebrow?: string; title: string; description: string; action?: React.ReactNode }) {
-  return <section className="page-intro"><div>{eyebrow && <p className="eyebrow">{eyebrow}</p>}<h1>{title}</h1><p>{description}</p></div>{action}</section>;
-}
-
-function StatCard({ label, value, delta, icon }: { label: string; value: number | string; delta: string; icon: React.ReactNode }) {
-  return <div className="stat-card"><div className="stat-icon">{icon}</div><div><div className="stat-label">{label}</div><div className="stat-value">{value}</div><div className="stat-delta">{delta}</div></div></div>;
-}
-
-function EventRow({ item, index }: { item: EventItem; index: number }) {
-  return <div className="event-row"><span className="rank">{index + 1}</span><div className="event-main">{item.sourceUrl ? <a className="event-title event-link" href={item.sourceUrl} target="_blank" rel="noreferrer">{item.title}<ExternalLink size={13} /></a> : <div className="event-title">{item.title}</div>}<div className="event-meta"><span>{item.company}</span><span>{item.date}</span>{item.sourceUrl ? <a href={item.sourceUrl} target="_blank" rel="noreferrer">{item.source}</a> : <span>{item.source}</span>}</div><div className="tag-line">{item.tags.map((tag) => <span className="tag" key={tag}>{tag}</span>)}</div></div><span className={`impact ${impactClass(item.impact)}`}>{item.impact}</span></div>;
-}
-
-function HomePage({ events, themes, implications, viewpoints, competitors, remote, setPage }: { events: EventItem[]; themes: IndustryTheme[]; implications: KejieImplication[]; viewpoints: Viewpoint[]; competitors: Competitor[]; remote: GeneratedRadar | null; setPage: (page: Page) => void }) {
-  const today = new Date().toISOString().slice(0, 10);
-  const masterCount = viewpoints.filter((v) => v.status === '母版候选').length + implications.filter((v) => v.status === '母版候选').length;
-  return <div className="page-grid">
-    <section className="hero-card"><div><p className="eyebrow">KeenData Strategy Hub</p><h1>从外部信号到科杰产品行动</h1><p>先看事实，再识别行业共性，形成可追溯观点，最后落到产品升级、生态合作和母版候选。</p>{remote?.generatedAt && <p className="remote-line">最近扫描：{new Date(remote.generatedAt).toLocaleString()}｜监控对象：{remote.watchlistCount || competitors.length} 个</p>}</div><div className="hero-actions"><button className="primary" onClick={() => setPage('brief')}><Target size={16} />进入3分钟简报</button><button className="secondary" onClick={() => setPage('import')}><Plus size={16} />导入公众号</button></div></section>
-    <div className="stats-row"><StatCard label="今日新增情报" value={events.filter((e) => e.date === today).length} delta="以真实日期统计" icon={<Sparkles size={20} />} /><StatCard label="竞合对象" value={competitors.length} delta="支持自定义扩展" icon={<Building2 size={20} />} /><StatCard label="行业主题" value={themes.length} delta="可下钻证据" icon={<Flame size={20} />} /><StatCard label="母版候选" value={masterCount} delta="待人工审核" icon={<BookOpen size={20} />} /></div>
-    <div className="content-two"><section className="panel"><div className="panel-head"><div><h2>今日最重要动态</h2><p>按影响等级与热度排序，标题可打开原始来源</p></div><button onClick={() => setPage('competitors')}>进入竞对雷达 <ChevronRight size={14} /></button></div>{events.slice().sort((a, b) => b.heat - a.heat).slice(0, 5).map((item, index) => <EventRow key={item.id} item={item} index={index} />)}</section><section className="panel"><div className="panel-head"><div><h2>产品升级信号</h2><p>竞对迭代 → 科杰差距 → 下一版本</p></div><button onClick={() => setPage('kejie')}>查看路线图 <ChevronRight size={14} /></button></div><div className="signal-stack">{productMoves.slice(0, 4).map((move) => <button className="signal-card signal-button" key={move.id} onClick={() => setPage('kejie')}><span className="priority-pill">{move.priority}</span><div><strong>{move.product}｜{move.direction}</strong><p>{move.nextRelease}</p></div><ChevronRight size={16} /></button>)}</div></section></div>
-    <div className="content-three"><section className="panel"><div className="panel-head"><h2>行业主题上升榜</h2></div>{themes.slice().sort((a, b) => b.delta - a.delta).slice(0, 5).map((theme) => <button className="trend-row" key={theme.id} onClick={() => setPage('industry')}><span>{theme.name}</span><strong>+{theme.delta}</strong></button>)}</section><section className="panel"><div className="panel-head"><h2>重点竞合对象</h2><button onClick={() => setPage('competitors')}>管理对象</button></div>{competitors.slice(0, 6).map((c) => <button className="company-mini company-mini-button" key={c.id} onClick={() => setPage('competitors')}><span className="avatar">{c.logo}</span><div><strong>{c.name}</strong><p>{c.type}｜{c.status}</p></div><ChevronRight size={15} /></button>)}</section><section className="panel"><div className="panel-head"><h2>本周领导讨论议题</h2></div><ol className="question-list"><li>哪些竞对产品升级需要进入科杰下一版本？</li><li>企业认知模型如何形成可交付的共享上下文？</li><li>可信数据空间如何承载智能体服务和结果分润？</li></ol></section></div>
-  </div>;
-}
-
-function CompetitorsPage({ events, sources, competitors, onAdd, onRemove, onImport }: { events: EventItem[]; sources: SourceMaterial[]; competitors: Competitor[]; onAdd: (item: Competitor) => void; onRemove: (id: string) => void; onImport: (prefill: ImportPrefill) => void }) {
-  const [active, setActive] = useState(competitors[0]?.id || '');
-  const [query, setQuery] = useState('');
-  const [type, setType] = useState('全部');
-  const [showAdd, setShowAdd] = useState(false);
-  const [draft, setDraft] = useState({ name: '', type: '模型厂商', status: '观察中', sourceName: '', sourceUrl: '' });
-  const types = ['全部', ...new Set(competitors.map((c) => c.type))];
-  const filtered = competitors.filter((c) => (type === '全部' || c.type === type) && `${c.name}${c.tags.join('')}`.toLowerCase().includes(query.toLowerCase()));
-  const company = competitors.find((item) => item.id === active) || filtered[0] || competitors[0];
-  const companyEvents = company ? events.filter((event) => event.company === company.name || company.tags.some((tag) => event.tags.includes(tag))).slice(0, 10) : [];
-  const companySources = company ? [...new Map([...(company.sources || []), ...getOfficialSources(company.name), ...sources.filter((s) => s.company === company.name).map((s) => ({ name: s.publisher, kind: s.publisher.includes('公众号') ? '公众号' as const : '官网' as const, url: s.url }))].map((source) => [source.url || source.name, source])).values()] : [];
-  const preferredSource = companySources.find((source) => source.kind === '公众号') || companySources[0];
-  function addCompany(e: React.FormEvent) { e.preventDefault(); if (!draft.name.trim()) return; onAdd({ id: `custom_${Date.now()}`, name: draft.name.trim(), type: draft.type, logo: draft.name.trim().slice(0, 1), status: draft.status, cooperation: '待评估', summary: '自定义竞合对象，等待导入材料后补充画像。', tags: [draft.type], priority: 'P1', sources: draft.sourceName || draft.sourceUrl ? [{ name: draft.sourceName || '公众号/官网', kind: draft.sourceUrl.includes('mp.weixin') ? '公众号' : '官网', url: draft.sourceUrl || undefined }] : [] }); setDraft({ name: '', type: '模型厂商', status: '观察中', sourceName: '', sourceUrl: '' }); setShowAdd(false); }
-  return <div className="page-grid"><PageIntro eyebrow="COMPETITIVE INTELLIGENCE" title="竞合对象与事件雷达" description="对象可扩展；每家公司关联公众号、官网和事件证据，并形成合作/竞争判断。" action={<button className="primary" onClick={() => setShowAdd(!showAdd)}><Plus size={16} />添加竞合对象</button>} />
-    {showAdd && <form className="panel add-form" onSubmit={addCompany}><div className="panel-head"><h2>新增监控对象</h2><button type="button" onClick={() => setShowAdd(false)}><X size={18} /></button></div><div className="form-grid"><label>公司名称<input aria-label="公司名称" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="例如：Anthropic" /></label><label>对象类型<select aria-label="对象类型" value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value })}><option>模型厂商</option><option>云与平台型厂商</option><option>算力/芯片厂商</option><option>数据基础设施厂商</option><option>产业链主/数产集团</option></select></label><label>跟踪状态<select aria-label="跟踪状态" value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value })}><option>观察中</option><option>建议接触</option><option>适配中</option><option>已合作</option><option>重点竞合</option></select></label><label>公众号/来源名称<input aria-label="公众号或来源名称" value={draft.sourceName} onChange={(e) => setDraft({ ...draft, sourceName: e.target.value })} placeholder="例如：Anthropic 官方" /></label><label className="span-2">来源链接<input aria-label="来源链接" value={draft.sourceUrl} onChange={(e) => setDraft({ ...draft, sourceUrl: e.target.value })} placeholder="公众号文章、官网或 RSS 链接" /></label></div><button className="primary" type="submit" disabled={!draft.name.trim()}>保存并开始跟踪</button></form>}
-    <div className="split-page"><section className="panel company-list"><div className="list-tools"><div className="inline-search"><Search size={16} /><input aria-label="搜索竞合对象" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="搜索公司或标签" /></div><select aria-label="筛选对象类型" value={type} onChange={(e) => setType(e.target.value)}>{types.map((t) => <option key={t}>{t}</option>)}</select></div><div className="object-count">{filtered.length} 个对象</div>{filtered.map((item) => <button className={`company-card ${company?.id === item.id ? 'active' : ''}`} onClick={() => setActive(item.id)} key={item.id}><span className="avatar">{item.logo}</span><div><strong>{item.name}</strong><p>{item.type}｜{item.status}</p></div><ChevronRight size={16} /></button>)}</section>
-      {company && <section className="panel detail-panel"><div className="company-header"><span className="big-avatar">{company.logo}</span><div><div className="title-line"><h1>{company.name}</h1><span className="priority-pill">{company.priority || 'P1'}</span></div><p>{company.summary}</p><div className="tag-line">{company.tags.map((tag) => <span className="tag" key={tag}>{tag}</span>)}</div></div><div className="company-actions"><button className="primary" onClick={() => onImport({ company: company.name, url: preferredSource?.url, publisher: preferredSource?.name || '微信公众号' })}><Link2 size={16} />导入公众号/网页</button>{company.id.startsWith('custom_') && <button className="danger-button" onClick={() => onRemove(company.id)}>删除自定义对象</button>}</div></div><div className="metric-strip"><span><small>对象类型</small>{company.type}</span><span><small>合作状态</small>{company.status}</span><span><small>建议策略</small>{company.cooperation}</span></div>
-        <div className="section-head"><div><h2>信息源</h2><p>打开原文核验，或把该链接直接送入材料导入。</p></div></div><div className="source-strip">{companySources.length ? companySources.map((source, i) => <div className="source-chip" key={`${source.name}-${i}`}><span>{source.kind}</span><strong>{source.name}</strong>{source.url && <><a href={source.url} target="_blank" rel="noreferrer" aria-label={`打开${source.name}`} title="打开原始链接"><ExternalLink size={14} /></a><button onClick={() => onImport({ company: company.name, url: source.url, publisher: source.name })} title="导入此链接"><UploadCloud size={14} /></button></>}</div>) : <button className="empty-inline" onClick={() => onImport({ company: company.name })}><Plus size={15} />添加公众号或官网来源</button>}</div>
-        <div className="section-head"><div><h2>事件时间线</h2><p>展开卡片查看事实、影响和下一动作。</p></div><span>{companyEvents.length} 条关联事件</span></div><div className="timeline">{(companyEvents.length ? companyEvents : events.slice(0, 4)).map((event) => <details className="timeline-card" key={event.id}><summary><div><time>{event.date}</time><h3>{event.title}</h3><p>{event.source}｜{event.type}</p></div><span className={`impact ${impactClass(event.impact)}`}>影响 {event.impact}</span></summary><div className="evidence-grid"><div><small>来源事实</small><p>{event.summary}</p>{event.sourceUrl && <a className="source-link" href={event.sourceUrl} target="_blank" rel="noreferrer">打开原文 <ExternalLink size={14} /></a>}</div><div><small>初步影响</small><p>该事件与 {event.tags.slice(0, 3).join('、')} 相关，需要结合历史动作判断其产品与市场意图。</p></div><div><small>建议动作</small><p>补充原文证据，判断是否进入行业主题、观点池或产品升级看板。</p><button className="inline-action" onClick={() => onImport({ company: event.company, url: event.sourceUrl, publisher: event.source })}>导入/补充证据</button></div></div></details>)}</div>
-      </section>}
+  return (
+    <div className="brand-lockup">
+      <img src={`${import.meta.env.BASE_URL}assets/keendata-logo.png`} alt="科杰科技 KeenData" />
     </div>
-  </div>;
+  );
 }
 
-function IndustryPage({ themes, events, onCreate }: { themes: IndustryTheme[]; events: EventItem[]; onCreate: (theme: IndustryTheme) => void }) {
-  const [activeId, setActiveId] = useState(themes[0]?.id || '');
-  const active = themes.find((t) => t.id === activeId) || themes[0];
-  const evidence = active ? events.filter((e) => e.tags.includes(active.name) || active.companies.includes(e.company)).slice(0, 6) : [];
-  return <div className="page-grid"><PageIntro eyebrow="INDUSTRY THEMES" title="行业分析工作台" description="不再只是主题卡片：可查看热度变化、厂商表达、事实证据和科杰可采用角度。" />
-    <div className="industry-layout"><section className="panel theme-nav"><div className="panel-head"><div><h2>主题趋势</h2><p>按热度选择并下钻</p></div><Filter size={17} /></div>{themes.slice().sort((a, b) => b.hot - a.hot).map((theme) => <button key={theme.id} className={active?.id === theme.id ? 'active' : ''} onClick={() => setActiveId(theme.id)}><div><strong>{theme.name}</strong><span>{theme.companies.slice(0, 3).join(' · ')}</span></div><div className="heat"><b>{theme.hot}</b><small>+{theme.delta}</small></div></button>)}</section>
-      {active && <section className="panel theme-detail"><div className="detail-title"><div><span className="status-dot" />本周重点主题<h2>{active.name}</h2><p>{active.summary}</p></div><div className="heat-score"><strong>{active.hot}</strong><span>热度 +{active.delta}</span></div></div><div className="analysis-grid"><article><small>共同表达</small><div className="tag-line">{active.expressions.map((x) => <span className="tag" key={x}>{x}</span>)}</div></article><article><small>代表厂商</small><p>{active.companies.join('、') || '待补充'}</p></article><article className="span-2"><small>科杰可采用角度</small><p>{active.kejieAngle || `科杰应把“${active.name}”放入数据—认知—行动三层架构，明确 KeenData、企业认知模型与 KeenClaw 各自承接的能力。`}</p></article></div><div className="section-head"><div><h2>厂商表达对照</h2><p>同一主题下，不同厂商正在争夺什么位置。</p></div><button className="secondary" onClick={() => onCreate(active)}><Plus size={15} />转为观点候选</button></div><div className="comparison-table"><div className="table-head"><span>厂商</span><span>当前表达</span><span>科杰判断</span></div>{active.companies.slice(0, 6).map((company, index) => <div className="table-row" key={company}><strong>{company}</strong><span>{active.expressions[index % active.expressions.length] || active.name}</span><span>{company === '科杰' ? '形成自主母版' : index < 2 ? '重点学习产品化路径' : '持续观察'}</span></div>)}</div><div className="section-head"><div><h2>证据来源</h2><p>所有判断回到可追溯事件，原始链接可直接核验。</p></div><span>{evidence.length} 条</span></div><div className="evidence-list">{evidence.length ? evidence.map((item) => item.sourceUrl ? <a className="evidence-link" href={item.sourceUrl} target="_blank" rel="noreferrer" key={item.id}><div><strong>{item.company}｜{item.title}</strong><p>{item.summary}</p></div><span>{item.date}<ExternalLink size={13} /></span></a> : <article key={item.id}><div><strong>{item.company}｜{item.title}</strong><p>{item.summary}</p></div><span>{item.date}</span></article>) : <div className="empty-inline">暂无关联证据，建议先导入相关公众号或官网材料。</div>}</div></section>}
-    </div>
-  </div>;
+function Impact({ value }: { value: EventItem['impact'] }) {
+  return <span className={`impact impact-${value}`}>影响：{value}</span>;
 }
 
-const mapBranches = [
-  ['1. 时代判断', '竞争焦点从模型能力转向产业生产力'], ['2. 核心矛盾', '模型能力不会自动变成产业价值'], ['3. 数据重构', '记录型→生产型，孤岛型→流通型，报表型→行动型'], ['4. 新基建', 'AI 数据基础设施是产业化时代的新基建'], ['5. 三层重构', '数据供给→企业认知→智能体行动'], ['6. 科杰架构', '算、数、模、行'], ['7. 落地方法', '底层逻辑统一，组织/城市/产业场景适配'], ['8. 终章表达', '科杰，与时代同频，与产业共生'],
-];
-
-function ViewpointsPage({ viewpoints, sources, onPromote }: { viewpoints: Viewpoint[]; sources: SourceMaterial[]; onPromote: (v: Viewpoint) => void }) {
-  const [mode, setMode] = useState<'pool' | 'map'>('pool');
-  const [activeId, setActiveId] = useState(viewpoints[0]?.id || '');
-  const active = viewpoints.find((v) => v.id === activeId) || viewpoints[0];
-  const related = active ? sources.filter((s) => active.sourceIds?.includes(s.id) || s.title === active.source || active.source.includes(s.publisher)).slice(0, 4) : [];
-  async function copyText() { if (active) await navigator.clipboard.writeText(active.kejieRewrite); }
-  return <div className="page-grid"><PageIntro eyebrow="VIEWPOINT STUDIO" title="观点提炼与数据重构地图" description="每条观点都展示来源、推导过程、科杰化表达、使用场景和母版状态。" action={<div className="segmented"><button className={mode === 'pool' ? 'active' : ''} onClick={() => setMode('pool')}>观点池</button><button className={mode === 'map' ? 'active' : ''} onClick={() => setMode('map')}>Map1 观点地图</button></div>} />
-    {mode === 'map' ? <section className="panel map-panel"><div className="map-core"><span>数据重构</span><strong>AI 产业化时代的新基建</strong><p>从数据供给，到组织认知，再到智能体行动</p></div><div className="map-branches">{mapBranches.map(([title, body], index) => <button key={title} onClick={() => { const match = viewpoints.find((v) => v.mapBranch?.startsWith(String(index + 1))); if (match) { setActiveId(match.id); setMode('pool'); } }}><span>{title}</span><strong>{body}</strong><ChevronRight size={17} /></button>)}</div></section> : <div className="viewpoint-layout"><section className="panel viewpoint-list"><div className="panel-head"><div><h2>观点候选</h2><p>{viewpoints.length} 条｜点击下钻</p></div></div>{viewpoints.map((v) => <button className={active?.id === v.id ? 'active' : ''} key={v.id} onClick={() => setActiveId(v.id)}><div className="knowledge-meta">{v.mapBranch || v.source}｜{v.status}</div><strong>{v.title}</strong><p>{v.kejieRewrite}</p></button>)}</section>{active && <section className="panel viewpoint-detail"><div className="detail-title"><div><span className="status-badge">{active.status}</span><h2>{active.title}</h2><p>{active.source}</p></div><span className="confidence">置信度 {active.confidence || '中'}</span></div><div className="logic-flow"><div><span>01</span><small>外部原始表达</small><p>{active.rawExpression}</p></div>{(active.reasoning || ['识别行业变化', '判断科杰关联', '形成可用表达']).map((step, index) => <div key={step}><span>0{index + 2}</span><small>推导节点</small><p>{step}</p></div>)}<div className="result"><span>→</span><small>科杰化表达</small><p>{active.kejieRewrite}</p></div></div><div className="section-head"><div><h2>适用场景</h2><div className="tag-line">{active.scenes.map((scene) => <span className="tag" key={scene}>{scene}</span>)}</div></div></div><div className="section-head"><div><h2>来源证据</h2><p>{related.length ? '已关联原始材料' : '当前来源为 Map1/种子观点，后续可补充外部证据。'}</p></div></div>{related.map((s) => <div className="source-line" key={s.id}><div><strong>{s.title}</strong><span>{s.publisher}｜{s.importedAt}</span></div>{s.url && <a href={s.url} target="_blank" rel="noreferrer"><ExternalLink size={15} /></a>}</div>)}<div className="detail-actions"><button className="secondary" onClick={copyText}><Clipboard size={15} />复制表达</button><button className="primary" onClick={() => onPromote(active)}><ShieldCheck size={15} />加入母版候选</button></div></section>}</div>}
-  </div>;
+function Empty({ title, body }: { title: string; body: string }) {
+  return <div className="empty"><strong>{title}</strong><p>{body}</p></div>;
 }
 
-function KejiePage({ implications, knowledgeMaster, onPromote, onOpenViewpoints }: { implications: KejieImplication[]; knowledgeMaster: KnowledgeMaster | null; onPromote: (v: KejieImplication) => void; onOpenViewpoints: () => void }) {
-  const [tab, setTab] = useState<'insights' | 'roadmap' | 'knowledge'>('roadmap');
-  const [activeMoveId, setActiveMoveId] = useState(productMoves[0]?.id || '');
-  const activeMove = productMoves.find((move) => move.id === activeMoveId) || productMoves[0];
-  const categories = ['全部', ...new Set(implications.map((x) => x.category))];
-  const [category, setCategory] = useState('全部');
-  const filtered = implications.filter((x) => category === '全部' || x.category === category);
-  return <div className="page-grid"><PageIntro eyebrow="KEENDATA ACTIONS" title="对科杰的启发、产品升级与知识母版" description="把外部变化转为产品动作，并沉淀为可核验、可复制、可持续更新的科杰知识母版。" action={<div className="segmented kejie-tabs"><button className={tab === 'insights' ? 'active' : ''} onClick={() => setTab('insights')}>战略启发</button><button className={tab === 'roadmap' ? 'active' : ''} onClick={() => setTab('roadmap')}>产品升级路线</button><button className={tab === 'knowledge' ? 'active' : ''} onClick={() => setTab('knowledge')}>知识母版</button></div>} />
-    {tab === 'knowledge' ? <KnowledgeMasterPanel master={knowledgeMaster} onOpenViewpoints={onOpenViewpoints} /> : tab === 'roadmap' ? <><section className="panel roadmap-panel"><div className="panel-head"><div><h2>竞对迭代 → 科杰产品升级</h2><p>点击任一产品行查看差距、动作与验收重点。</p></div><span className="candidate-note">自动生成内容为候选分析，正式结论需人工审核</span></div><div className="roadmap-table"><div className="roadmap-head"><span>产品/方向</span><span>外部迭代信号</span><span>当前差距</span><span>下一版本动作</span><span>责任/优先级</span></div>{productMoves.map((move) => <button className={activeMove?.id === move.id ? 'roadmap-row active' : 'roadmap-row'} key={move.id} onClick={() => setActiveMoveId(move.id)}><div><strong>{move.product}</strong><span>{move.direction}</span></div><p>{move.competitorSignal}</p><p>{move.currentGap}</p><p className="next-release">{move.nextRelease}</p><div><strong>{move.owner}</strong><span className="priority-pill">{move.priority}</span></div></button>)}</div></section>{activeMove && <section className="panel move-detail"><div className="panel-head"><div><span className="status-badge">{activeMove.priority} 产品动作</span><h2>{activeMove.product}｜{activeMove.direction}</h2></div></div><div className="move-detail-grid"><article><small>为什么现在做</small><p>{activeMove.competitorSignal}</p></article><article><small>当前缺口</small><p>{activeMove.currentGap}</p></article><article><small>下一版本</small><p>{activeMove.nextRelease}</p></article><article><small>责任与复盘</small><p>{activeMove.owner}｜纳入月度产品复盘并补齐验收指标。</p></article></div></section>}</> : <section className="panel"><div className="filter-tabs">{categories.map((c) => <button className={category === c ? 'active' : ''} key={c} onClick={() => setCategory(c)}>{c}</button>)}</div><div className="implication-grid">{filtered.map((item) => <article className="implication-card" key={item.id}><div className="card-top"><span>{item.category}</span><span className="priority-pill">{item.priority || '中'}</span></div><h3>{item.title}</h3><p>{item.insight}</p><div className="action-box"><small>建议动作｜{item.owner || '待指定'}</small><p>{item.action}</p></div>{item.productMoves && <ul>{item.productMoves.map((m) => <li key={m}>{m}</li>)}</ul>}<button className="secondary" onClick={() => onPromote(item)}><ShieldCheck size={15} />加入母版候选</button></article>)}</div></section>}
-  </div>;
+function CompetitorView({
+  events,
+  competitors,
+  onAddSubject,
+  onToast,
+}: {
+  events: EventItem[];
+  competitors: Competitor[];
+  onAddSubject: () => void;
+  onToast: (message: string) => void;
+}) {
+  const [company, setCompany] = useState('全部公司');
+  const filtered = useMemo(() => company === '全部公司' ? sortEvents(events) : sortEvents(events).filter((item) => item.company === company), [company, events]);
+  const [selectedId, setSelectedId] = useState(filtered[0]?.id || '');
+  const [selectionLocked, setSelectionLocked] = useState(false);
+  const [mobileDetail, setMobileDetail] = useState(false);
+  useEffect(() => {
+    if (!selectionLocked || !filtered.some((item) => item.id === selectedId)) setSelectedId(filtered[0]?.id || '');
+  }, [filtered, selectedId, selectionLocked]);
+  const selected = filtered.find((item) => item.id === selectedId) || filtered[0];
+  const detail = selected ? detailFor(selected) : null;
+
+  return (
+    <section className={`workspace ${mobileDetail ? 'show-mobile-detail' : ''}`}>
+      <div className="master-pane">
+        <div className="section-heading">
+          <div><h1>竞合分析</h1><p>自动解读公众号，持续更新竞合主体动态</p></div>
+          <label className="select-wrap">
+            <select aria-label="筛选竞合主体" value={company} onChange={(event) => { setCompany(event.target.value); setSelectionLocked(false); }}>
+              <option>全部公司</option>
+              {competitors.map((item) => <option key={item.id}>{item.name}</option>)}
+            </select>
+            <CaretDown size={15} />
+          </label>
+        </div>
+        <div className="list-heading"><strong>最新动态</strong><button className="text-button" onClick={onAddSubject}><Plus size={16} />新增竞合主体</button></div>
+        <div className="article-list" role="list">
+          {filtered.length ? filtered.map((item, index) => {
+            const isActive = selected?.id === item.id;
+            const previous = filtered[index - 1];
+            const group = !previous || dateGroup(previous.date) !== dateGroup(item.date) ? dateGroup(item.date) : '';
+            return (
+              <div key={item.id}>
+                {group && <div className="date-divider">{group} · {formatDate(item.date)}</div>}
+                <button
+                  className={`article-row ${isActive ? 'active' : ''}`}
+                  onClick={() => { setSelectedId(item.id); setSelectionLocked(true); setMobileDetail(true); }}
+                  aria-pressed={isActive}
+                >
+                  <span className="article-date">{formatDate(item.date)}</span>
+                  <span className="article-copy">
+                    <span className="article-meta"><strong>{item.company}</strong><span>{item.source}</span></span>
+                    <b>{item.title}</b>
+                    <span>{item.summary}</span>
+                  </span>
+                  <ArrowSquareOut size={17} weight="regular" />
+                </button>
+              </div>
+            );
+          }) : <Empty title="暂无动态" body="导入一篇公众号文章后，系统会自动归入对应主体。" />}
+        </div>
+      </div>
+      <aside className="detail-pane">
+        <button className="mobile-back" onClick={() => setMobileDetail(false)}><ArrowLeft size={18} />返回动态列表</button>
+        {selected && detail ? <>
+          <div className="detail-meta">{selected.date} · {selected.source} · AI 自动解读</div>
+          <div className="detail-title-row"><div><span>{selected.company}</span><h2>{selected.title}</h2></div><Impact value={selected.impact} /></div>
+          <div className="interpretation">
+            <article><h3>发生了什么</h3><p>{detail.happened}</p></article>
+            <article><h3>对方怎么表达</h3><p>{detail.expression}</p></article>
+            <article><h3>这意味着什么</h3><p>{detail.meaning}</p></article>
+            <article><h3>对科杰的影响</h3><p>{detail.impact}</p></article>
+          </div>
+          <div className="source-footer">
+            <div><span>来源：{selected.source}</span><span>发布时间：{selected.date}</span><span>置信度：{selected.confidence || '中'}</span></div>
+            {selected.sourceUrl && <a href={selected.sourceUrl} target="_blank" rel="noreferrer">查看公众号原文 <ArrowSquareOut size={16} /></a>}
+          </div>
+          <button className="secondary-button include-button" onClick={() => onToast('已纳入最新 PDF；下次导出将包含这条动态。')}><FilePdf size={17} />加入最新 PDF</button>
+        </> : <Empty title="请选择一条动态" body="点击左侧条目查看完整解读。" />}
+      </aside>
+    </section>
+  );
 }
 
-function ImportPage({ prefill, competitors, sources, onImport, onOpenCompetitors }: { prefill: ImportPrefill; competitors: Competitor[]; sources: SourceMaterial[]; onImport: (payload: ReturnType<typeof analyzeMaterial>) => void; onOpenCompetitors: () => void }) {
-  const [mode, setMode] = useState<'link' | 'text'>('link');
-  const [title, setTitle] = useState(''); const [publisher, setPublisher] = useState(prefill.publisher || '微信公众号'); const [url, setUrl] = useState(prefill.url || ''); const [content, setContent] = useState(''); const [company, setCompany] = useState(prefill.company || '待识别对象');
-  const [result, setResult] = useState<ReturnType<typeof analyzeMaterial> | null>(null); const [linkError, setLinkError] = useState('');
-  useEffect(() => { setCompany(prefill.company || '待识别对象'); setUrl(prefill.url || ''); setPublisher(prefill.publisher || '微信公众号'); setResult(null); setLinkError(''); }, [prefill]);
-  function submit(e: React.FormEvent) { e.preventDefault(); if (mode === 'link' && !/^https?:\/\//.test(url.trim())) { setLinkError('请输入完整的 http:// 或 https:// 链接'); return; } const analyzed = analyzeMaterial({ title, publisher, url, content, company }); setResult(analyzed); setLinkError(''); onImport(analyzed); }
-  async function pasteLink() { try { const text = await navigator.clipboard.readText(); setUrl(text.trim()); setLinkError(''); } catch { setLinkError('浏览器未授权读取剪贴板，请直接粘贴链接。'); } }
-  const canSubmit = mode === 'link' ? /^https?:\/\//.test(url.trim()) : content.trim().length > 20;
-  const recent = sources.filter((source) => source.url).slice(0, 5);
-  return <div className="page-grid"><PageIntro eyebrow="SOURCE INGESTION" title="导入公众号与外部材料" description="粘贴链接即可登记并进入待处理队列；补充正文后生成更高置信度的行业观点与科杰启发。" /><div className="import-layout"><form className="panel import-panel" onSubmit={submit}><div className="segmented full"><button type="button" className={mode === 'link' ? 'active' : ''} onClick={() => setMode('link')}>公众号/网页链接</button><button type="button" className={mode === 'text' ? 'active' : ''} onClick={() => setMode('text')}>复制正文</button></div><div className="import-guide">{mode === 'link' ? <><Link2 size={18} /><div><strong>链接导入可直接使用</strong><p>先保存原始链接并建立待处理任务；公众号无法跨域读取时不会编造正文，后续可补充证据。</p></div></> : <><FileText size={18} /><div><strong>复制正文可立即分析</strong><p>粘贴正文后立即生成事件、行业主题、观点和科杰启发候选。</p></div></>}</div><div className="form-grid"><label>关联对象<select aria-label="关联对象" value={company} onChange={(e) => setCompany(e.target.value)}><option>待识别对象</option>{competitors.map((c) => <option key={c.id}>{c.name}</option>)}</select></label><label>来源<input aria-label="来源" value={publisher} onChange={(e) => setPublisher(e.target.value)} /></label><label className="span-2">标题（可选）<input aria-label="标题" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="不填则自动标记待补标题" /></label>{mode === 'link' && <label className="span-2">公众号或网页链接<div className="input-action"><input aria-label="公众号或网页链接" value={url} onChange={(e) => { setUrl(e.target.value); setLinkError(''); }} placeholder="https://mp.weixin.qq.com/s/..." /><button className="secondary" type="button" onClick={pasteLink}>粘贴链接</button></div>{linkError && <span className="field-error">{linkError}</span>}{url && /^https?:\/\//.test(url) && <a className="link-preview" href={url} target="_blank" rel="noreferrer">预览原始链接 <ExternalLink size={13} /></a>}</label>}<label className="span-2">正文 / 证据片段 {mode === 'link' && '（可选）'}<textarea aria-label="正文或证据片段" value={content} onChange={(e) => setContent(e.target.value)} placeholder="粘贴正文、摘要或关键段落。仅填链接也可先登记。" /></label></div><button className="primary wide" type="submit" disabled={!canSubmit}><Sparkles size={16} />{mode === 'link' && !content.trim() ? '登记链接并进入待处理队列' : '解析并生成候选'}</button></form><section className="panel import-result"><div className="panel-head"><div><h2>结构化结果</h2><p>事实、分析、启发和动作分层展示</p></div></div>{result ? <div className="result-stack"><div className={`ingest-status ${result.source.status === '待补全文' ? 'warning-box' : 'success-box'}`}><CheckCircle2 size={18} /><div><strong>{result.source.status === '待补全文' ? '链接已登记' : '材料已处理'}</strong><p>{result.source.summary}</p></div></div><ResultBlock step="01" title="来源事实" body={`${result.event.company}｜${result.event.title}\n${result.event.summary}`} /><ResultBlock step="02" title="行业分析" body={`${result.theme.name}｜热度 ${result.theme.hot}\n${result.theme.summary}`} /><ResultBlock step="03" title="观点候选" body={`${result.viewpoint.kejieRewrite}\n置信度：${result.viewpoint.confidence}`} /><ResultBlock step="04" title="对科杰启发" body={`${result.implication.title}\n${result.implication.action}`} /><div className="result-actions">{result.source.url && <a className="secondary" href={result.source.url} target="_blank" rel="noreferrer">打开原始链接 <ExternalLink size={15} /></a>}<button className="primary" onClick={onOpenCompetitors}>回到竞对分析 <ChevronRight size={15} /></button></div></div> : <><div className="empty-state compact-empty"><UploadCloud size={38} /><strong>等待导入</strong><p>提交后立即显示处理状态和下一步动作。</p></div>{recent.length > 0 && <div className="recent-imports"><h3>最近材料</h3>{recent.map((source) => <a href={source.url} target="_blank" rel="noreferrer" key={source.id}><div><strong>{source.title}</strong><span>{source.publisher}｜{source.importedAt}</span></div><ExternalLink size={14} /></a>)}</div>}</>}</section></div></div>;
+function IndustryView({ themes, events }: { themes: IndustryTheme[]; events: EventItem[] }) {
+  const sorted = useMemo(() => [...themes].sort((a, b) => b.hot - a.hot), [themes]);
+  const [selectedId, setSelectedId] = useState(sorted[0]?.id || '');
+  const [mobileDetail, setMobileDetail] = useState(false);
+  const selected = sorted.find((item) => item.id === selectedId) || sorted[0];
+  const evidence = selected ? events.filter((item) => selected.companies.includes(item.company) || item.tags.includes(selected.name)).slice(0, 5) : [];
+  return (
+    <section className={`workspace ${mobileDetail ? 'show-mobile-detail' : ''}`}>
+      <div className="master-pane">
+        <div className="section-heading"><div><h1>行业发展趋势</h1><p>把多家厂商动态汇总为可持续验证的趋势判断</p></div><span className="update-chip">本周更新 {sorted.filter((item) => item.delta > 0).length} 项</span></div>
+        <div className="list-heading"><strong>趋势判断</strong><span>按热度排序</span></div>
+        <div className="article-list trend-list">
+          {sorted.map((item) => <button key={item.id} className={`article-row ${selected?.id === item.id ? 'active' : ''}`} onClick={() => { setSelectedId(item.id); setMobileDetail(true); }}>
+            <span className="trend-score">{item.hot}</span>
+            <span className="article-copy"><span className="article-meta"><strong>{item.delta >= 5 ? '持续增强' : item.delta > 0 ? '本周新增' : '保持观察'}</strong><span>{item.companies.slice(0, 3).join('、') || '跨行业'}</span></span><b>{item.name}</b><span>{item.summary}</span></span>
+            <CaretDown size={17} className="row-caret" />
+          </button>)}
+        </div>
+      </div>
+      <aside className="detail-pane">
+        <button className="mobile-back" onClick={() => setMobileDetail(false)}><ArrowLeft size={18} />返回趋势列表</button>
+        {selected ? <>
+          <div className="detail-meta">行业主题 · 热度 {selected.hot} · 变化 +{selected.delta}</div>
+          <div className="detail-title-row"><div><span>趋势判断</span><h2>{selected.name}</h2></div></div>
+          <div className="interpretation">
+            <article><h3>趋势结论</h3><p>{selected.summary}</p></article>
+            <article><h3>友商共同表达</h3><p>{selected.expressions.join(' / ') || '正在持续归纳'}</p></article>
+            <article><h3>代表厂商</h3><p>{selected.companies.join('、') || '跨行业综合判断'}</p></article>
+            <article><h3>科杰可采用角度</h3><p>{selected.kejieAngle || '将行业变化映射到科杰数据—认知—行动三层架构，并明确产品承载与客户验证。'}</p></article>
+          </div>
+          <div className="evidence-block"><strong>代表证据 · {evidence.length} 条</strong>{evidence.length ? evidence.map((item) => item.sourceUrl ? <a key={item.id} href={item.sourceUrl} target="_blank" rel="noreferrer"><span>{item.company}｜{item.title}</span><ArrowSquareOut size={15} /></a> : <span key={item.id}>{item.company}｜{item.title}</span>) : <p>暂无已关联动态，后续导入同主题公众号材料后自动补充。</p>}</div>
+        </> : <Empty title="暂无趋势" body="竞合动态积累后，系统会自动形成行业趋势。" />}
+      </aside>
+    </section>
+  );
 }
 
-function ResultBlock({ step, title, body }: { step: string; title: string; body: string }) { return <div className="result-block"><span>{step}</span><div><h3>{title}</h3><p>{body}</p></div></div>; }
-
-function BriefPage() {
-  const [brief, setBrief] = useState<LeaderBrief | null>(null); const [failed, setFailed] = useState(false);
-  useEffect(() => { fetch(`${import.meta.env.BASE_URL}generated/leader-brief.json?ts=${Date.now()}`).then((r) => { if (!r.ok) throw new Error(); return r.json(); }).then(setBrief).catch(() => setFailed(true)); }, []);
-  if (failed) return <section className="panel empty-state"><strong>简报加载失败</strong><p>请先运行竞对扫描与简报生成脚本。</p></section>;
-  if (!brief) return <section className="panel empty-state">正在加载简报…</section>;
-  return <div className="page-grid"><PageIntro eyebrow="LEADER DAILY BRIEF" title={brief.title || '领导每日3分钟战略简报'} description={brief.summary || '暂无摘要'} action={<a className="secondary link-button" href={`${import.meta.env.BASE_URL}leader.html`} target="_blank" rel="noreferrer">打开独立简报 <ExternalLink size={15} /></a>} /><div className="content-two"><section className="panel"><div className="panel-head"><h2>今日重点信号</h2><span>{brief.generatedAt ? new Date(brief.generatedAt).toLocaleString() : '待生成'}</span></div>{(brief.topSignals || []).slice(0, 6).map((item, index) => <EventRow item={item} index={index} key={item.id || `${item.company}-${index}`} />)}</section><section className="panel"><div className="panel-head"><h2>建议动作</h2></div><div className="action-list">{(brief.actions || []).map((action) => <article key={action.title}><span>{action.owner}｜{action.priority}</span><strong>{action.title}</strong><p>{action.detail}</p></article>)}</div></section></div><div className="content-two"><section className="panel"><div className="panel-head"><h2>建议讨论</h2></div><ol className="question-list">{(brief.keyQuestions || []).map((q) => <li key={q}>{q}</li>)}</ol></section><section className="panel risk-panel"><div className="panel-head"><h2>风险提示</h2></div><ol className="question-list">{(brief.riskWarnings || []).map((q) => <li key={q}>{q}</li>)}</ol></section></div></div>;
+function KejieView({ implications }: { implications: KejieImplication[] }) {
+  const categories = ['核心定位', '企业认知模型', '产品与方案架构', '可信数据空间', '产品升级路线', '生态与市场打法'];
+  const normalized = useMemo(() => categories.map((category) => {
+    const matches = implications.filter((item) => item.category === category || (category === '产品与方案架构' && item.category === '产品架构'));
+    return matches.length ? matches : [{ id: `placeholder_${category}`, category, title: `${category}的持续更新`, insight: '正在等待更多竞合与行业证据，系统会在材料达到阈值后形成新启发。', action: '继续导入相关公众号和行业报告。', status: '待审核' as const, priority: '中' as const }];
+  }).flat(), [implications]);
+  const [selectedId, setSelectedId] = useState(normalized[0]?.id || '');
+  const [mobileDetail, setMobileDetail] = useState(false);
+  const selected = normalized.find((item) => item.id === selectedId) || normalized[0];
+  return (
+    <section className={`workspace ${mobileDetail ? 'show-mobile-detail' : ''}`}>
+      <div className="master-pane">
+        <div className="section-heading"><div><h1>对科杰的启发</h1><p>把外部变化转化为定位、产品与市场行动</p></div><span className="update-chip">持续自动更新</span></div>
+        <div className="list-heading"><strong>六类核心启发</strong><span>{implications.length} 条判断</span></div>
+        <div className="article-list implication-list">
+          {normalized.map((item) => <button key={item.id} className={`article-row ${selected?.id === item.id ? 'active' : ''}`} onClick={() => { setSelectedId(item.id); setMobileDetail(true); }}>
+            <span className="category-index">{String(categories.indexOf(item.category === '产品架构' ? '产品与方案架构' : item.category) + 1).padStart(2, '0')}</span>
+            <span className="article-copy"><span className="article-meta"><strong>{item.category}</strong><span>优先级 {item.priority || '中'}</span></span><b>{item.title}</b><span>{item.insight}</span></span>
+            <CaretDown size={17} className="row-caret" />
+          </button>)}
+        </div>
+      </div>
+      <aside className="detail-pane">
+        <button className="mobile-back" onClick={() => setMobileDetail(false)}><ArrowLeft size={18} />返回启发列表</button>
+        {selected ? <>
+          <div className="detail-meta">{selected.category} · 优先级 {selected.priority || '中'} · AI 候选</div>
+          <div className="detail-title-row"><div><span>对科杰的启发</span><h2>{selected.title}</h2></div></div>
+          <div className="kejie-statement">{selected.insight}</div>
+          <div className="interpretation">
+            <article><h3>为什么重要</h3><p>该判断来自近期竞合动态与行业表达的共同变化，需要持续用公开证据和客户反馈校正。</p></article>
+            <article><h3>建议动作</h3><p>{selected.action}</p></article>
+            <article><h3>报告落点</h3><p>纳入《科杰 AI 数据基础设施战略与竞合格局分析报告》的“对科杰的启发与产品升级建议”章节。</p></article>
+          </div>
+          <div className="source-footer"><div><span>状态：{selected.status}</span><span>负责人：{selected.owner || '待指定'}</span></div></div>
+        </> : null}
+      </aside>
+    </section>
+  );
 }
 
-function MasterPage({ viewpoints, implications }: { viewpoints: Viewpoint[]; implications: KejieImplication[] }) {
-  const [reviewed, setReviewed] = useState<string[]>([]);
-  const candidates = [...viewpoints.filter((v) => v.status === '母版候选').map((v) => ({ id: v.id, type: '观点', title: v.title, body: v.kejieRewrite, source: v.source })), ...implications.filter((v) => v.status === '母版候选').map((v) => ({ id: v.id, type: v.category, title: v.title, body: v.insight, source: v.owner || '待指定' }))];
-  return <div className="page-grid"><PageIntro eyebrow="MASTER CANDIDATES" title="项目架构母版候选池" description="候选内容经过待审核、已精选、已改写、母版候选后，才可人工同步到正式母版。" /><section className="panel"><div className="status-flow"><span>待审核</span><ArrowRight size={16} /><span>已精选</span><ArrowRight size={16} /><span>已改写</span><ArrowRight size={16} /><span className="active">母版候选</span><ArrowRight size={16} /><span>已同步母版</span></div><div className="candidate-grid">{candidates.map((item) => <article key={`${item.type}-${item.id}`}><span>{item.type}</span><h3>{item.title}</h3><p>{item.body}</p><small>来源/责任：{item.source}</small><button className={reviewed.includes(item.id) ? 'secondary review-submitted' : 'secondary'} onClick={() => setReviewed((items) => items.includes(item.id) ? items : [...items, item.id])}>{reviewed.includes(item.id) ? <><CheckCircle2 size={15} />已提交审核</> : '请求人工审核'}</button></article>)}</div></section></div>;
-}
+function ImportModal({ competitors, onClose, onConfirm }: { competitors: Competitor[]; onClose: () => void; onConfirm: (payload: AnalysisPayload) => void }) {
+  const [url, setUrl] = useState('');
+  const [title, setTitle] = useState('');
+  const [publisher, setPublisher] = useState('微信公众号');
+  const [publishedAt, setPublishedAt] = useState('');
+  const [company, setCompany] = useState('待识别对象');
+  const [content, setContent] = useState('');
+  const [status, setStatus] = useState<'idle' | 'reading' | 'ready' | 'error'>('idle');
+  const [message, setMessage] = useState('');
+  const [preview, setPreview] = useState<AnalysisPayload | null>(null);
 
-function SearchPage({ events, themes, implications, viewpoints, onNavigate, initialQuery = '' }: { events: EventItem[]; themes: IndustryTheme[]; implications: KejieImplication[]; viewpoints: Viewpoint[]; onNavigate: (page: Page) => void; initialQuery?: string }) {
-  const [q, setQ] = useState(initialQuery);
-  useEffect(() => { setQ(initialQuery); }, [initialQuery]);
-  const results = useMemo(() => { if (!q.trim()) return []; return [...events.map((x) => ({ type: '竞对事件', title: x.title, body: x.summary, page: 'competitors' as Page, url: x.sourceUrl })), ...themes.map((x) => ({ type: '行业主题', title: x.name, body: x.summary, page: 'industry' as Page, url: undefined })), ...implications.map((x) => ({ type: '科杰启发', title: x.title, body: x.insight, page: 'kejie' as Page, url: undefined })), ...viewpoints.map((x) => ({ type: '观点', title: x.title, body: x.kejieRewrite, page: 'viewpoints' as Page, url: undefined }))].filter((x) => `${x.title}${x.body}`.toLowerCase().includes(q.toLowerCase())); }, [q, events, themes, implications, viewpoints]);
-  return <div className="page-grid"><PageIntro eyebrow="KNOWLEDGE SEARCH" title="全局搜索" description="跨竞对事件、行业主题、观点和科杰启发检索；点击结果进入对应工作台。" /><section className="panel"><div className="search-big"><Search size={20} /><input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="搜索公司、产品、观点、可信数据空间…" /></div><div className="candidate-grid">{results.map((item, i) => <article className="search-result" key={`${item.type}-${item.title}-${i}`}><span>{item.type}</span><h3>{item.title}</h3><p>{item.body}</p><div className="search-result-actions"><button className="secondary" onClick={() => onNavigate(item.page)}>进入模块 <ChevronRight size={14} /></button>{item.url && <a className="secondary" href={item.url} target="_blank" rel="noreferrer">打开原文 <ExternalLink size={14} /></a>}</div></article>)}</div>{q && !results.length && <div className="empty-state">没有找到匹配内容</div>}</section></div>;
-}
-
-function CloudSettingsPage({ status, profile, message, onSendLink, onSignOut }: { status: CloudStatus; profile: CloudProfile | null; message: string; onSendLink: (email: string) => Promise<void>; onSignOut: () => Promise<void> }) {
-  const [email, setEmail] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  async function submit(event: React.FormEvent) {
-    event.preventDefault();
-    if (!email.trim()) return;
-    setSubmitting(true);
-    try { await onSendLink(email.trim()); } finally { setSubmitting(false); }
+  async function readLink() {
+    setStatus('reading'); setMessage('正在读取公众号正文并识别主体…'); setPreview(null);
+    try {
+      const article = await readWechatArticle(url);
+      setTitle(article.title); setPublisher(article.publisher); setPublishedAt(article.publishedAt || ''); setContent(article.content);
+      const result = analyzeMaterial({ title: article.title, publisher: article.publisher, publishedAt: article.publishedAt, url, content: article.content, company });
+      setCompany(result.event.company); setPreview(result); setStatus('ready'); setMessage(`已读取正文 ${article.content.length} 字，并识别为「${result.event.company}」动态。`);
+    } catch (error) {
+      setStatus('error'); setMessage(`${error instanceof Error ? error.message : '自动读取失败'}。请粘贴正文，系统仍可完成总结。`);
+    }
   }
-  return <div className="page-grid"><PageIntro eyebrow="CLOUD DATA" title="设置" description="Supabase 负责团队共享、权限控制和材料留痕；本机缓存仅作为离线兜底。" /><section className="panel cloud-settings"><div className="panel-head"><div><h2>云端数据连接</h2><p>项目：keendata-strategy-hub</p></div><span className={`cloud-badge cloud-${status}`}>{status}</span></div><div className="cloud-summary"><div><small>数据区域</small><strong>Supabase PostgreSQL</strong></div><div><small>访问策略</small><strong>登录可读，编辑角色可写</strong></div><div><small>当前身份</small><strong>{profile ? `${profile.displayName}｜${profile.role}` : '尚未登录'}</strong></div></div>{status === '未登录' && <form className="cloud-login" onSubmit={submit}><label>工作邮箱<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@keendata.com.cn" required /></label><button className="primary" type="submit" disabled={submitting}>{submitting ? '发送中…' : '发送登录链接'}</button><p>首次登录账号自动成为管理员；后续账号默认只读，由管理员分配 editor / reviewer 权限。</p></form>}{status === '已连接' && <div className="cloud-actions"><div className="success-box"><CheckCircle2 size={18} /><span>新增竞合对象和导入材料会同时写入 Supabase。</span></div><button className="secondary" onClick={onSignOut}>退出云端账号</button></div>}{status === '未配置' && <div className="warning-box cloud-message">缺少 VITE_SUPABASE_URL 或 VITE_SUPABASE_PUBLISHABLE_KEY。</div>}{message && <div className="cloud-message">{message}</div>}</section><section className="panel"><div className="panel-head"><h2>安全边界</h2></div><p>Publishable Key 可以出现在浏览器构建中，真正的数据安全由登录会话和数据库 RLS 策略保证。数据库密码和 service_role 密钥不得写入前端或 GitHub 仓库。</p></section></div>;
+
+  function analyzeFallback() {
+    if (!title.trim() || !content.trim()) { setStatus('error'); setMessage('请补充文章标题和正文。'); return; }
+    const result = analyzeMaterial({ title, publisher, publishedAt: publishedAt || undefined, url, content, company });
+    setCompany(result.event.company); setPreview(result); setStatus('ready'); setMessage(`已生成解读，并归入「${result.event.company}」。`);
+  }
+
+  return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <section className="modal import-modal" role="dialog" aria-modal="true" aria-labelledby="import-title">
+      <div className="modal-head"><div><span>自动解读</span><h2 id="import-title">导入公众号文章</h2></div><button aria-label="关闭" onClick={onClose}><X size={20} /></button></div>
+      <label className="field"><span>公众号文章链接</span><div className="input-action"><input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://mp.weixin.qq.com/s/..." autoFocus /><button className="primary-button" onClick={readLink} disabled={!url.trim() || status === 'reading'}>{status === 'reading' ? <SpinnerGap className="spin" size={18} /> : <LinkSimple size={18} />}开始解读</button></div></label>
+      {message && <div className={`import-status status-${status}`}>{status === 'ready' ? <Check size={18} /> : status === 'reading' ? <SpinnerGap className="spin" size={18} /> : null}<span>{message}</span></div>}
+      {(status === 'error' || status === 'ready') && <div className="fallback-fields">
+        <div className="form-row"><label className="field"><span>文章标题</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label><label className="field"><span>竞合主体</span><input list="competitor-options" value={company} onChange={(event) => setCompany(event.target.value)} /><datalist id="competitor-options">{competitors.map((item) => <option key={item.id} value={item.name} />)}</datalist></label></div>
+        <div className="form-row"><label className="field"><span>公众号</span><input value={publisher} onChange={(event) => setPublisher(event.target.value)} /></label><label className="field"><span>发布时间</span><input type="date" value={publishedAt} onChange={(event) => setPublishedAt(event.target.value)} /></label></div>
+        <label className="field"><span>正文内容</span><textarea value={content} onChange={(event) => setContent(event.target.value)} rows={7} placeholder="自动读取失败时，将公众号正文粘贴到这里" /></label>
+        <button className="secondary-button wide" onClick={analyzeFallback}>重新生成解读</button>
+      </div>}
+      {preview && <div className="import-preview"><div><span>{preview.event.company} · {preview.event.type}</span><strong>{preview.event.title}</strong><p>{preview.event.summary}</p></div><Impact value={preview.event.impact} /></div>}
+      <div className="modal-actions"><button className="ghost-button" onClick={onClose}>取消</button><button className="primary-button" onClick={() => preview && onConfirm(preview)} disabled={!preview}><Check size={18} />确认加入竞合分析</button></div>
+    </section>
+  </div>;
 }
 
-function SimplePage({ title, children }: { title: string; children: React.ReactNode }) { return <div className="page-grid"><PageIntro title={title} description="平台运行与内容资产概览" /><section className="panel simple-body">{children}</section></div>; }
+function AddSubjectModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: (item: Competitor) => void }) {
+  const [name, setName] = useState('');
+  const [type, setType] = useState('数据基础设施厂商');
+  return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className="modal small-modal" role="dialog" aria-modal="true"><div className="modal-head"><div><span>竞合主体</span><h2>新增关注对象</h2></div><button aria-label="关闭" onClick={onClose}><X size={20} /></button></div><label className="field"><span>公司名称</span><input value={name} onChange={(event) => setName(event.target.value)} autoFocus placeholder="例如：Anthropic" /></label><label className="field"><span>对象类型</span><select value={type} onChange={(event) => setType(event.target.value)}><option>数据基础设施厂商</option><option>模型厂商</option><option>云与平台厂商</option><option>算力/芯片厂商</option><option>合作伙伴</option></select></label><div className="modal-actions"><button className="ghost-button" onClick={onClose}>取消</button><button className="primary-button" disabled={!name.trim()} onClick={() => onConfirm({ id: `custom_${Date.now()}`, name: name.trim(), type, logo: name.trim().slice(0, 2), status: '观察中', summary: '新建竞合对象，等待导入材料后自动完善画像。', tags: [type], cooperation: '待评估', priority: 'P1' })}><Plus size={18} />保存主体</button></div></section></div>;
+}
+
+function SearchOverlay({ query, setQuery, events, themes, implications, onClose, onSelectTab }: { query: string; setQuery: (value: string) => void; events: EventItem[]; themes: IndustryTheme[]; implications: KejieImplication[]; onClose: () => void; onSelectTab: (tab: Tab) => void }) {
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return [
+      ...events.map((item) => ({ tab: 'competitors' as Tab, kind: '竞合动态', title: `${item.company}｜${item.title}`, body: item.summary })),
+      ...themes.map((item) => ({ tab: 'industry' as Tab, kind: '行业趋势', title: item.name, body: item.summary })),
+      ...implications.map((item) => ({ tab: 'kejie' as Tab, kind: '科杰启发', title: item.title, body: item.insight })),
+    ].filter((item) => `${item.title}${item.body}`.toLowerCase().includes(q)).slice(0, 10);
+  }, [query, events, themes, implications]);
+  return <div className="search-overlay"><div className="search-box"><MagnifyingGlass size={20} /><input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索公司、趋势或科杰启发" /><button aria-label="关闭搜索" onClick={onClose}><X size={20} /></button></div><div className="search-results">{query && !results.length ? <Empty title="没有找到结果" body="尝试搜索公司名、Agent、可信数据空间等关键词。" /> : results.map((item, index) => <button key={`${item.kind}-${index}`} onClick={() => { onSelectTab(item.tab); onClose(); }}><span>{item.kind}</span><strong>{item.title}</strong><p>{item.body}</p></button>)}</div></div>;
+}
+
+function AccountPopover({ status, profile, message, onLogin, onSignOut }: { status: CloudStatus; profile: CloudProfile | null; message: string; onLogin: (email: string) => Promise<void>; onSignOut: () => Promise<void> }) {
+  const [email, setEmail] = useState('');
+  const [sending, setSending] = useState(false);
+  async function submit(event: React.FormEvent) { event.preventDefault(); setSending(true); try { await onLogin(email); } finally { setSending(false); } }
+  return <div className="account-popover"><strong>{profile?.displayName || '科杰研究用户'}</strong><span className={`cloud-state state-${status}`}>{status}</span>{status === '已连接' ? <><p>{profile?.role || '成员'} · 数据已同步至 Supabase</p><button className="secondary-button wide" onClick={onSignOut}>退出登录</button></> : <form onSubmit={submit}><p>登录后可与团队同步导入材料。</p><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="工作邮箱" required /><button className="primary-button wide" disabled={sending}>{sending ? '发送中…' : '发送登录链接'}</button></form>}{message && <small>{message}</small>}</div>;
+}
 
 export default function App() {
-  const [page, setPage] = useState<Page>('home'); const [mobileOpen, setMobileOpen] = useState(false); const [runtime, setRuntime] = useState<RuntimeData>(() => readStorage(STORAGE_KEY, { events: [], themes: [], viewpoints: [], implications: [], sources: [] })); const [customCompetitors, setCustomCompetitors] = useState<Competitor[]>(() => readStorage(COMPETITOR_KEY, [])); const [remote, setRemote] = useState<GeneratedRadar | null>(null); const [knowledgeMaster, setKnowledgeMaster] = useState<KnowledgeMaster | null>(null); const [query, setQuery] = useState(''); const [importTarget, setImportTarget] = useState<ImportPrefill>({ company: '待识别对象' }); const [cloud, setCloud] = useState<CloudSnapshot>(EMPTY_CLOUD); const [cloudStatus, setCloudStatus] = useState<CloudStatus>(isSupabaseConfigured ? '连接中' : '未配置'); const [cloudProfile, setCloudProfile] = useState<CloudProfile | null>(null); const [cloudMessage, setCloudMessage] = useState(''); const [notificationOpen, setNotificationOpen] = useState(false);
-  useEffect(() => { fetch(`${import.meta.env.BASE_URL}generated/radar.json?ts=${Date.now()}`).then((r) => r.ok ? r.json() : null).then(setRemote).catch(() => setRemote(null)); }, []);
-  useEffect(() => { fetch(`${import.meta.env.BASE_URL}generated/knowledge-master.json?ts=${Date.now()}`).then((r) => r.ok ? r.json() : null).then(setKnowledgeMaster).catch(() => setKnowledgeMaster(null)); }, []);
+  const [tab, setTab] = useState<Tab>('competitors');
+  const [runtime, setRuntime] = useState<RuntimeData>(() => readStorage(STORAGE_KEY, EMPTY_RUNTIME));
+  const [customCompetitors, setCustomCompetitors] = useState<Competitor[]>(() => readStorage(COMPETITOR_KEY, []));
+  const [remote, setRemote] = useState<GeneratedRadar | null>(null);
+  const [cloud, setCloud] = useState<CloudSnapshot>(EMPTY_CLOUD);
+  const [cloudStatus, setCloudStatus] = useState<CloudStatus>(isSupabaseConfigured ? '连接中' : '未配置');
+  const [cloudProfile, setCloudProfile] = useState<CloudProfile | null>(null);
+  const [cloudMessage, setCloudMessage] = useState('');
+  const [importOpen, setImportOpen] = useState(false);
+  const [addSubjectOpen, setAddSubjectOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [toast, setToast] = useState('');
+  const [exporting, setExporting] = useState(false);
+
+  useEffect(() => { fetch(`${import.meta.env.BASE_URL}generated/radar.json?ts=${Date.now()}`).then((response) => response.ok ? response.json() : null).then(setRemote).catch(() => setRemote(null)); }, []);
+  useEffect(() => { if (!toast) return; const timer = window.setTimeout(() => setToast(''), 3200); return () => window.clearTimeout(timer); }, [toast]);
   useEffect(() => {
     if (!supabase) return;
     let active = true;
@@ -222,34 +384,85 @@ export default function App() {
       }
     }
     void hydrate();
-    const { data: authListener } = supabase.auth.onAuthStateChange(() => { window.setTimeout(() => void hydrate(), 0); });
-    return () => { active = false; authListener.subscription.unsubscribe(); };
+    const { data } = supabase.auth.onAuthStateChange(() => window.setTimeout(() => void hydrate(), 0));
+    return () => { active = false; data.subscription.unsubscribe(); };
   }, []);
-  const remoteData: RuntimeData = remote || { events: [], themes: [], viewpoints: [], implications: [], sources: [] };
-  const events = uniqueById([...cloud.events, ...runtime.events, ...remoteData.events, ...seedEvents]); const themes = uniqueById([...cloud.themes, ...runtime.themes, ...remoteData.themes, ...seedThemes]); const viewpoints = uniqueById([...cloud.viewpoints, ...runtime.viewpoints, ...remoteData.viewpoints, ...seedViewpoints]); const implications = uniqueById([...cloud.implications, ...runtime.implications, ...remoteData.implications, ...seedImplications]); const sources = uniqueById([...cloud.sources, ...runtime.sources, ...remoteData.sources, ...seedSources]); const competitors = uniqueById([...cloud.competitors, ...customCompetitors, ...seedCompetitors]);
-  function saveRuntime(next: RuntimeData) { setRuntime(next); writeStorage(STORAGE_KEY, next); }
-  function onImport(payload: ReturnType<typeof analyzeMaterial>) { saveRuntime({ events: [payload.event, ...runtime.events], themes: [payload.theme, ...runtime.themes], viewpoints: [payload.viewpoint, ...runtime.viewpoints], implications: [payload.implication, ...runtime.implications], sources: [payload.source, ...runtime.sources] }); if (cloudStatus === '已连接') void saveAnalyzedMaterial(payload).then(() => setCloudMessage('材料已同步到 Supabase')).catch((error) => { setCloudStatus('同步失败'); setCloudMessage(`本机已保存，云端写入失败：${error.message}`); }); }
-  function addCompetitor(item: Competitor) { const next = [item, ...customCompetitors]; setCustomCompetitors(next); writeStorage(COMPETITOR_KEY, next); if (cloudStatus === '已连接') void saveCloudCompetitor(item).then(() => setCloudMessage('竞合对象已同步到 Supabase')).catch((error) => { setCloudStatus('同步失败'); setCloudMessage(`本机已保存，云端写入失败：${error.message}`); }); }
-  function removeCompetitor(id: string) { const target = competitors.find((item) => item.id === id); const next = customCompetitors.filter((item) => item.id !== id); setCustomCompetitors(next); writeStorage(COMPETITOR_KEY, next); if (target && cloudStatus === '已连接') void deleteCloudCompetitor(target).catch((error) => setCloudMessage(`云端删除失败：${error.message}`)); }
-  async function requestLogin(email: string) { try { await sendMagicLink(email); setCloudMessage(`登录链接已发送至 ${email}，请在同一浏览器打开邮件完成登录。`); } catch (error) { setCloudMessage(error instanceof Error ? error.message : '发送登录链接失败'); } }
-  async function logout() { try { await cloudSignOut(); setCloud(EMPTY_CLOUD); setCloudProfile(null); setCloudStatus('未登录'); setCloudMessage('已退出云端账号，本机缓存仍保留。'); } catch (error) { setCloudMessage(error instanceof Error ? error.message : '退出失败'); } }
-  function importFor(prefill: ImportPrefill) { setImportTarget(prefill); setPage('import'); }
-  function createViewpoint(theme: IndustryTheme) { const item: Viewpoint = { id: `vp_theme_${Date.now()}`, title: `${theme.name}：从行业共识到科杰表达`, source: `行业主题｜${theme.name}`, rawExpression: theme.expressions.join(' / '), kejieRewrite: theme.kejieAngle || `科杰应把${theme.name}纳入“数据—认知—行动”产品架构，并明确产品承载和版本动作。`, scenes: ['领导汇报', '产品路线', '售前方案'], status: '待审核', confidence: '中', reasoning: ['聚合同主题厂商表达', '识别共同产品方向', '映射科杰三层架构'] }; saveRuntime({ ...runtime, viewpoints: [item, ...runtime.viewpoints] }); setPage('viewpoints'); }
-  function promoteViewpoint(item: Viewpoint) { saveRuntime({ ...runtime, viewpoints: [{ ...item, status: '母版候选' }, ...runtime.viewpoints.filter((v) => v.id !== item.id)] }); }
-  function promoteImplication(item: KejieImplication) { saveRuntime({ ...runtime, implications: [{ ...item, status: '母版候选' }, ...runtime.implications.filter((v) => v.id !== item.id)] }); }
-  const pageNode = (() => { switch (page) {
-    case 'home': return <HomePage events={events} themes={themes} implications={implications} viewpoints={viewpoints} competitors={competitors} remote={remote} setPage={setPage} />;
-    case 'brief': return <BriefPage />;
-    case 'competitors': return <CompetitorsPage events={events} sources={sources} competitors={competitors} onAdd={addCompetitor} onRemove={removeCompetitor} onImport={importFor} />;
-    case 'industry': return <IndustryPage themes={themes} events={events} onCreate={createViewpoint} />;
-    case 'viewpoints': return <ViewpointsPage viewpoints={viewpoints} sources={sources} onPromote={promoteViewpoint} />;
-    case 'kejie': return <KejiePage implications={implications} knowledgeMaster={knowledgeMaster} onPromote={promoteImplication} onOpenViewpoints={() => setPage('viewpoints')} />;
-    case 'master': return <MasterPage viewpoints={viewpoints} implications={implications} />;
-    case 'reports': return <SimplePage title="报告中心"><h2>内容资产</h2><p>已收录材料 {sources.length} 条、竞对事件 {events.length} 条、行业主题 {themes.length} 个、观点 {viewpoints.length} 条。</p><p>最近自动扫描：{remote?.generatedAt ? new Date(remote.generatedAt).toLocaleString() : '尚未运行'}。</p><a className="primary link-button" href={`${import.meta.env.BASE_URL}leader.html`} target="_blank" rel="noreferrer">打开领导简报</a></SimplePage>;
-    case 'import': return <ImportPage prefill={importTarget} competitors={competitors} sources={sources} onImport={onImport} onOpenCompetitors={() => setPage('competitors')} />;
-    case 'search': return <SearchPage events={events} themes={themes} implications={implications} viewpoints={viewpoints} onNavigate={setPage} />;
-    case 'settings': return <CloudSettingsPage status={cloudStatus} profile={cloudProfile} message={cloudMessage} onSendLink={requestLogin} onSignOut={logout} />;
-    default: return null;
-  } })();
-  return <div className="app-shell"><aside className={`sidebar ${mobileOpen ? 'open' : ''}`}><div className="sidebar-top"><Logo /><button className="close-mobile" aria-label="关闭菜单" onClick={() => setMobileOpen(false)}><X size={18} /></button></div><p className="sidebar-desc">战略情报 · 行业洞察 · 产品行动<br />让外部变化持续进入科杰版本规划</p><nav>{navItems.map((item) => <button key={item.key} className={page === item.key ? 'active' : ''} onClick={() => { setPage(item.key); setMobileOpen(false); }}>{item.icon}<span>{item.label}</span></button>)}</nav><div className="review-note"><ShieldCheck size={18} /><div><strong>候选分析机制</strong><span>AI 生成，人工审核后发布</span></div></div></aside><main className="main"><header className="topbar"><button className="mobile-menu" aria-label="打开菜单" onClick={() => setMobileOpen(true)}><Menu size={20} /></button><div className="top-title"><strong>{navItems.find((item) => item.key === page)?.label}</strong><span>科杰战略情报与认知共创平台</span></div><div className="top-search"><Search size={16} /><input value={query} onChange={(e) => { setQuery(e.target.value); setPage('search'); }} placeholder="搜索竞对、行业、观点、产品…" /></div><button className={`cloud-indicator cloud-${cloudStatus}`} onClick={() => setPage('settings')} title="查看云端连接状态"><span />{cloudStatus}</button><button className={`icon-btn ${notificationOpen ? 'active' : ''}`} aria-label="通知" onClick={() => setNotificationOpen(!notificationOpen)}><Bell size={18} /></button></header>{notificationOpen && <section className="notification-popover"><div className="panel-head"><div><h2>最新情报</h2><p>{events.length} 条事件持续更新</p></div><button aria-label="关闭通知" onClick={() => setNotificationOpen(false)}><X size={16} /></button></div>{events.slice(0, 4).map((event) => event.sourceUrl ? <a href={event.sourceUrl} target="_blank" rel="noreferrer" key={event.id}><span className={`impact ${impactClass(event.impact)}`}>{event.impact}</span><div><strong>{event.title}</strong><p>{event.company}｜{event.date}</p></div><ExternalLink size={14} /></a> : <button key={event.id} onClick={() => { setPage('competitors'); setNotificationOpen(false); }}><span className={`impact ${impactClass(event.impact)}`}>{event.impact}</span><div><strong>{event.title}</strong><p>{event.company}｜{event.date}</p></div><ChevronRight size={14} /></button>)}</section>}{query && page === 'search' ? <SearchPage events={events} themes={themes} implications={implications} viewpoints={viewpoints} onNavigate={setPage} initialQuery={query} /> : pageNode}</main></div>;
+
+  const remoteData = remote || EMPTY_RUNTIME;
+  const events = uniqueById([...cloud.events, ...runtime.events, ...remoteData.events, ...seedEvents]);
+  const themes = uniqueById([...cloud.themes, ...runtime.themes, ...remoteData.themes, ...seedThemes]);
+  const viewpoints = uniqueById([...cloud.viewpoints, ...runtime.viewpoints, ...remoteData.viewpoints, ...seedViewpoints]);
+  const implications = uniqueById([...cloud.implications, ...runtime.implications, ...remoteData.implications, ...seedImplications]);
+  const sources = uniqueById([...cloud.sources, ...runtime.sources, ...remoteData.sources, ...seedSources]);
+  const competitors = uniqueById([...cloud.competitors, ...customCompetitors, ...seedCompetitors]);
+  const latestDate = sortEvents(events)[0]?.date || new Date().toISOString().slice(0, 10);
+
+  function saveRuntime(updater: (current: RuntimeData) => RuntimeData) {
+    setRuntime((current) => { const next = updater(current); writeStorage(STORAGE_KEY, next); return next; });
+  }
+
+  function addCompetitor(item: Competitor) {
+    setCustomCompetitors((current) => { const next = [item, ...current.filter((existing) => existing.name !== item.name)]; writeStorage(COMPETITOR_KEY, next); return next; });
+    if (cloudStatus === '已连接') void saveCloudCompetitor(item).catch((error) => setCloudMessage(`云端写入失败：${error.message}`));
+  }
+
+  function handleImport(payload: AnalysisPayload) {
+    saveRuntime((current) => ({
+      events: [payload.event, ...current.events],
+      themes: [payload.theme, ...current.themes],
+      viewpoints: [payload.viewpoint, ...current.viewpoints],
+      implications: [payload.implication, ...current.implications],
+      sources: [payload.source, ...current.sources],
+    }));
+    if (payload.event.company !== '待识别对象' && !competitors.some((item) => item.name === payload.event.company)) {
+      addCompetitor({ id: `auto_${Date.now()}`, name: payload.event.company, type: '自动识别主体', logo: payload.event.company.slice(0, 2), status: '观察中', summary: '由公众号文章自动识别并加入竞合对象库。', tags: payload.event.tags, cooperation: '待评估', priority: 'P1' });
+    }
+    if (cloudStatus === '已连接') void saveAnalyzedMaterial(payload).then(() => setCloudMessage('材料已同步到 Supabase')).catch((error) => setCloudMessage(`本机已保存，云端写入失败：${error.message}`));
+    setImportOpen(false); setTab('competitors'); setToast(`已解读并归入「${payload.event.company}」竞合动态。`);
+  }
+
+  async function handleExport() {
+    setExporting(true);
+    try { await exportLatestPdf({ events, themes, implications }); setToast('最新战略分析 PDF 已生成。'); }
+    catch (error) { setToast(error instanceof Error ? `PDF 生成失败：${error.message}` : 'PDF 生成失败'); }
+    finally { setExporting(false); }
+  }
+
+  async function requestLogin(email: string) {
+    try { await sendMagicLink(email); setCloudMessage(`登录链接已发送至 ${email}`); }
+    catch (error) { setCloudMessage(error instanceof Error ? error.message : '发送登录链接失败'); }
+  }
+
+  async function logout() {
+    try { await cloudSignOut(); setCloud(EMPTY_CLOUD); setCloudProfile(null); setCloudStatus('未登录'); setAccountOpen(false); }
+    catch (error) { setCloudMessage(error instanceof Error ? error.message : '退出失败'); }
+  }
+
+  return <div className="app">
+    <header className="app-header">
+      <Logo />
+      <nav className="primary-tabs" aria-label="主要模块">
+        <button className={tab === 'competitors' ? 'active' : ''} onClick={() => setTab('competitors')}>竞合分析</button>
+        <button className={tab === 'industry' ? 'active' : ''} onClick={() => setTab('industry')}>行业发展趋势</button>
+        <button className={tab === 'kejie' ? 'active' : ''} onClick={() => setTab('kejie')}>对科杰的启发</button>
+      </nav>
+      <div className="header-actions">
+        <button className="secondary-button import-button" onClick={() => setImportOpen(true)}><UploadSimple size={19} /><span>导入公众号</span></button>
+        <button className="primary-button export-button" onClick={handleExport} disabled={exporting}>{exporting ? <SpinnerGap className="spin" size={19} /> : <DownloadSimple size={19} />}<span>{exporting ? '生成中…' : '导出最新 PDF'}</span></button>
+        <button className="icon-button" aria-label="搜索" onClick={() => setSearchOpen(true)}><MagnifyingGlass size={22} /></button>
+        <button className={`avatar-button cloud-${cloudStatus}`} aria-label="账号与同步状态" onClick={() => setAccountOpen((open) => !open)}>{cloudProfile?.displayName?.slice(0, 1) || <UserCircle size={30} weight="fill" />}</button>
+      </div>
+      {accountOpen && <AccountPopover status={cloudStatus} profile={cloudProfile} message={cloudMessage} onLogin={requestLogin} onSignOut={logout} />}
+    </header>
+    <div className="report-freshness"><span>最新报告数据截止 {latestDate}</span><span>已收录 {sources.length} 篇材料 · {events.length} 条竞合动态</span></div>
+    <main className="app-main">
+      {tab === 'competitors' && <CompetitorView events={events} competitors={competitors} onAddSubject={() => setAddSubjectOpen(true)} onToast={setToast} />}
+      {tab === 'industry' && <IndustryView themes={themes} events={events} />}
+      {tab === 'kejie' && <KejieView implications={implications} />}
+    </main>
+    {importOpen && <ImportModal competitors={competitors} onClose={() => setImportOpen(false)} onConfirm={handleImport} />}
+    {addSubjectOpen && <AddSubjectModal onClose={() => setAddSubjectOpen(false)} onConfirm={(item) => { addCompetitor(item); setAddSubjectOpen(false); setToast(`已新增竞合主体「${item.name}」。`); }} />}
+    {searchOpen && <SearchOverlay query={query} setQuery={setQuery} events={events} themes={themes} implications={implications} onClose={() => { setSearchOpen(false); setQuery(''); }} onSelectTab={setTab} />}
+    {toast && <div className="toast"><Check size={18} weight="bold" />{toast}</div>}
+  </div>;
 }

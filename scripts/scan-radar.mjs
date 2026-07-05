@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { buildAnalysis, fetchSource, mergeUnique } from './radar-core.mjs';
+import { buildAnalysis, fetchSource, isUsableEvent, isUsableItem, mergeUnique } from './radar-core.mjs';
 
 const root = process.cwd();
 const watchlistPath = path.join(root, 'content/radar/watchlist.json');
@@ -50,12 +50,14 @@ async function main() {
   const previous = await readJson(outputPath, { events: [], themes: [], viewpoints: [], implications: [], sources: [] });
   const incoming = { events: [], themes: [], viewpoints: [], implications: [], sources: [] };
   const errors = [];
+  let skipped = 0;
 
   for (const company of watchlist.companies || []) {
     for (const source of company.sources || []) {
       try {
         const items = await fetchSource(source);
         for (const item of items.slice(0, watchlist.scanLimitPerSource || 5)) {
+          if (!isUsableItem(item)) { skipped += 1; continue; }
           const analyzed = buildAnalysis(company, item);
           incoming.sources.push(analyzed.source);
           incoming.events.push(analyzed.event);
@@ -69,8 +71,11 @@ async function main() {
     }
   }
 
-  const mergedSources = mergeUnique(previous.sources || [], incoming.sources).slice(0, 300);
+  const mergedSources = mergeUnique(previous.sources || [], incoming.sources)
+    .filter((source) => isUsableItem({ title: source.title, content: source.summary }))
+    .slice(0, 300);
   const mergedEvents = mergeUnique(previous.events || [], incoming.events)
+    .filter(isUsableEvent)
     .map((event) => ({
       ...event,
       sourceUrl: event.sourceUrl || mergedSources.find((source) => source.title === event.title || source.publisher === event.source)?.url,
@@ -79,7 +84,7 @@ async function main() {
     .slice(0, 300);
   const data = {
     generatedAt: new Date().toISOString(),
-    scanSummary: `扫描 ${watchlist.companies?.length || 0} 家竞合对象，新增候选 ${incoming.events.length} 条，失败 ${errors.length} 个源。`,
+    scanSummary: `扫描 ${watchlist.companies?.length || 0} 家竞合对象，新增候选 ${incoming.events.length} 条，过滤列表页/导航噪声 ${skipped} 条，失败 ${errors.length} 个源。`,
     watchlistCount: watchlist.companies?.length || 0,
     errors,
     sources: mergedSources,

@@ -36,6 +36,33 @@ export function extractText(html, max = 2400) {
   return compact(html, max);
 }
 
+const navigationNoise = [
+  /购买与服务热线|注册\s*\/\s*登录|检测到您已登录/, /Skip to (?:main )?content/i,
+  /选择区域\/语言|返回主菜单|集团网站/, /投资者关系\s+关于我们\s+企业动态/,
+  /You need to enable JavaScript to run this app/i, /首页\s+产品技术\s+产品技术/,
+];
+
+const listingTitles = [
+  /^新闻中心\s*-\s*华为/i, /^新闻报道_关于我们_华为云/i, /^曙光新闻-中科曙光/i,
+  /^新闻资讯-星环科技/i, /^All \| Databricks Blog/i, /^Press Releases \| Databricks/i,
+  /^Inside the AI Data Cloud/i, /^Press Releases \| Snowflake/i, /^Newsroom \| Palantir/i,
+  /^DeepSeek \| 深度求索/i, /^滴普科技\s*-\s*AI创造无限可能/i, /^天数智芯$/,
+  /^清微智能$/i, /^海光--用“芯”计算未来/i, /^Z\.ai\s*-\s*Inspiring AGI/i, /^智谱\s*\|\s*智谱/i,
+];
+
+export function isUsableItem(item) {
+  const title = compact(item?.title || '', 160);
+  const content = compact(item?.content || '', 1200);
+  if (!title || title.length < 8 || content.length < 35) return false;
+  if (listingTitles.some((pattern) => pattern.test(title))) return false;
+  if (navigationNoise.some((pattern) => pattern.test(content))) return false;
+  return true;
+}
+
+export function isUsableEvent(event) {
+  return isUsableItem({ title: event?.title, content: event?.summary });
+}
+
 export function parseFeed(xml, fallbackSource) {
   const items = [];
   const rssItems = [...xml.matchAll(/<item[\s\S]*?<\/item>/gi)].map((m) => m[0]);

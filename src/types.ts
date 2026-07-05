@@ -32,6 +32,12 @@ export interface EventItem {
   impact: Impact;
   tags: string[];
   heat: number;
+  publishedAt?: string;
+  whatHappened?: string;
+  competitorExpression?: string;
+  strategicMeaning?: string;
+  kejieImpact?: string;
+  confidence?: '高' | '中' | '低';
 }
 
 export interface KnowledgeEvidence {
