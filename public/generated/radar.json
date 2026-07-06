@@ -1,8 +1,21 @@
 {
-  "generatedAt": "2026-07-05T13:04:36.892Z",
-  "scanSummary": "扫描 13 家竞合对象，新增候选 0 条，过滤列表页/导航噪声 17 条，失败 0 个源。",
+  "generatedAt": "2026-07-06T04:44:02.235Z",
+  "scanSummary": "扫描 13 家竞合对象，新增候选 0 条，过滤列表页/导航噪声 15 条，失败 2 个源。",
   "watchlistCount": 13,
-  "errors": [],
+  "errors": [
+    {
+      "company": "华为昇腾",
+      "source": "华为新闻",
+      "url": "https://www.huawei.com/cn/news",
+      "error": "HTTP 403"
+    },
+    {
+      "company": "中科曙光",
+      "source": "中科曙光官网新闻",
+      "url": "https://www.sugon.com/about/news?category_id=1&time=0",
+      "error": "fetch failed"
+    }
+  ],
   "sources": [],
   "events": [],
   "themes": [
