@@ -1,14 +1,8 @@
 {
-  "generatedAt": "2026-07-21T03:50:46.959Z",
-  "scanSummary": "扫描 13 家竞合对象，新增候选 0 条，过滤列表页/导航噪声 13 条，失败 4 个源。",
+  "generatedAt": "2026-07-22T03:50:54.874Z",
+  "scanSummary": "扫描 13 家竞合对象，新增候选 0 条，过滤列表页/导航噪声 15 条，失败 2 个源。",
   "watchlistCount": 13,
   "errors": [
-    {
-      "company": "智谱",
-      "source": "智谱官网",
-      "url": "https://www.zhipuai.cn/",
-      "error": "fetch failed"
-    },
     {
       "company": "华为昇腾",
       "source": "华为新闻",
@@ -20,12 +14,6 @@
       "source": "中科曙光官网新闻",
       "url": "https://www.sugon.com/about/news?category_id=1&time=0",
       "error": "fetch failed"
-    },
-    {
-      "company": "Snowflake",
-      "source": "Snowflake Press Releases",
-      "url": "https://www.snowflake.com/en/news/press-releases/",
-      "error": "This operation was aborted"
     }
   ],
   "sources": [],
